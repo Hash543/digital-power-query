@@ -1,0 +1,512 @@
+[
+  {
+    "id": "pmbus",
+    "term": "PMBus",
+    "zhTerm": "電源管理匯流排",
+    "category": "pmbus",
+    "en": "Power Management Bus. An open, SMBus/I²C-based command protocol for configuring, controlling and monitoring power converters. Part I covers transport and electrical; Part II defines the command set and data formats (LINEAR11, LINEAR16, DIRECT, VID).",
+    "zh": "電源管理匯流排。基於 SMBus/I²C 的開放式命令協定，用於設定、控制與監控電源轉換器。Part I 定義傳輸與電氣規格；Part II 定義命令集與資料格式（LINEAR11、LINEAR16、DIRECT、VID）。",
+    "related": [
+      "smbus",
+      "linear11",
+      "linear16",
+      "direct-format",
+      "pec"
+    ],
+    "calc": "/calc/pmbus",
+    "sources": [
+      {
+        "title": "PMBus specifications (pmbus.org)",
+        "url": "https://pmbus.org/specification-archives/"
+      }
+    ]
+  },
+  {
+    "id": "smbus",
+    "term": "SMBus",
+    "zhTerm": "系統管理匯流排",
+    "category": "pmbus",
+    "en": "System Management Bus. A two-wire bus derived from I²C with tighter timing (e.g. clock-low timeout), optional Packet Error Checking and an alert line (SMBALERT#). PMBus runs on top of SMBus.",
+    "zh": "系統管理匯流排。源自 I²C 的雙線匯流排，時序規範較嚴格（例如 clock-low timeout），支援選用的封包錯誤檢查（PEC）與警示腳位 SMBALERT#。PMBus 建構在 SMBus 之上。",
+    "related": [
+      "pmbus",
+      "pec"
+    ],
+    "sources": [
+      {
+        "title": "SMBus specification (smbus.org)",
+        "url": "http://smbus.org/specs/"
+      }
+    ]
+  },
+  {
+    "id": "pec",
+    "term": "PEC (Packet Error Checking)",
+    "zhTerm": "封包錯誤檢查",
+    "category": "pmbus",
+    "en": "An optional CRC-8 byte (polynomial x⁸ + x² + x + 1, 0x07) appended to SMBus/PMBus transactions, computed over all bytes including the address bytes.",
+    "zh": "選用的 CRC-8 檢查位元組（多項式 x⁸ + x² + x + 1，即 0x07），附加在 SMBus/PMBus 交易後，計算範圍涵蓋位址在內的所有位元組。",
+    "related": [
+      "smbus",
+      "pmbus"
+    ],
+    "calc": "/calc/pmbus"
+  },
+  {
+    "id": "linear11",
+    "term": "LINEAR11",
+    "zhTerm": "LINEAR11 線性格式",
+    "category": "pmbus",
+    "en": "PMBus 16-bit linear format for most non-output-voltage values. Bits [15:11] are a 5-bit two's-complement exponent N; bits [10:0] are an 11-bit two's-complement mantissa Y. Value X = Y · 2^N.",
+    "zh": "PMBus 用於大部分非輸出電壓參數的 16 位元線性格式。位元 [15:11] 為 5 位元二補數指數 N；位元 [10:0] 為 11 位元二補數尾數 Y。實際值 X = Y · 2^N。",
+    "formula": "X = Y · 2^N",
+    "related": [
+      "linear16",
+      "direct-format",
+      "pmbus"
+    ],
+    "calc": "/calc/pmbus",
+    "sources": [
+      {
+        "title": "TI UCD90320 – Distinguishing between linear data formats",
+        "url": "https://ti.com/document-viewer/ja-jp/lit/html/SLVUAW9C/distinguishing-between-linear-data-formats-slvuaw99068"
+      }
+    ]
+  },
+  {
+    "id": "linear16",
+    "term": "LINEAR16 (ULINEAR16)",
+    "zhTerm": "LINEAR16 線性格式",
+    "category": "pmbus",
+    "en": "PMBus format for output-voltage commands (VOUT_COMMAND, READ_VOUT, …). The 16-bit word is an unsigned mantissa V; the exponent N comes from the lower 5 bits of VOUT_MODE (two's complement). Value X = V · 2^N.",
+    "zh": "PMBus 輸出電壓相關命令（VOUT_COMMAND、READ_VOUT 等）所用格式。16 位元字組為無號尾數 V；指數 N 取自 VOUT_MODE 的低 5 位元（二補數）。實際值 X = V · 2^N。",
+    "formula": "X = V · 2^N,  N = VOUT_MODE[4:0]",
+    "related": [
+      "vout-mode",
+      "linear11"
+    ],
+    "calc": "/calc/pmbus"
+  },
+  {
+    "id": "vout-mode",
+    "term": "VOUT_MODE (20h)",
+    "zhTerm": "輸出電壓模式",
+    "category": "pmbus",
+    "en": "One-byte PMBus command describing how output-voltage values are encoded. Bits [7:5] select the mode (000 = Linear, 001 = VID, 010 = Direct, 011 = IEEE half precision in PMBus 1.3+); bits [4:0] are the parameter (the exponent in Linear mode, the VID code type in VID mode).",
+    "zh": "描述輸出電壓數值編碼方式的單位元組 PMBus 命令。位元 [7:5] 選擇模式（000 = Linear、001 = VID、010 = Direct、011 = IEEE 半精度，PMBus 1.3 以後）；位元 [4:0] 為參數（Linear 模式時為指數，VID 模式時為 VID 碼型）。",
+    "related": [
+      "linear16",
+      "vid"
+    ],
+    "calc": "/calc/pmbus",
+    "sources": [
+      {
+        "title": "TI TPS546C23 – VOUT_MODE (20h)",
+        "url": "https://www.ti.com/document-viewer/TPS546C23/datasheet/vout-mode-20h-slusby89434"
+      }
+    ]
+  },
+  {
+    "id": "direct-format",
+    "term": "DIRECT data format",
+    "zhTerm": "DIRECT 直接格式",
+    "category": "pmbus",
+    "en": "PMBus format where the device publishes coefficients m (slope), b (offset) and R (exponent). Encode: Y = (m·X + b) · 10^R. Decode: X = (Y · 10^−R − b) / m. Y is a 16-bit two's-complement integer.",
+    "zh": "PMBus 的一種資料格式，裝置提供係數 m（斜率）、b（偏移）與 R（指數）。編碼：Y = (m·X + b) · 10^R；解碼：X = (Y · 10^−R − b) / m。Y 為 16 位元二補數整數。",
+    "formula": "X = (Y · 10^−R − b) / m",
+    "related": [
+      "linear11",
+      "coefficients"
+    ],
+    "calc": "/calc/pmbus",
+    "sources": [
+      {
+        "title": "PMBus – Direct Data Transfer Format (APEC 2017)",
+        "url": "https://pmbus.org/wp-content/uploads/2017/07/2017_APEC_PMBus_Direct_Data_Xfer_Format.pdf"
+      }
+    ]
+  },
+  {
+    "id": "coefficients",
+    "term": "COEFFICIENTS (30h)",
+    "zhTerm": "係數命令",
+    "category": "pmbus",
+    "en": "PMBus block-read command that returns the m, b and R coefficients a device uses for a given command in DIRECT format.",
+    "zh": "PMBus 區塊讀取命令，回傳裝置在 DIRECT 格式下某命令所使用的 m、b、R 係數。",
+    "related": [
+      "direct-format"
+    ]
+  },
+  {
+    "id": "vid",
+    "term": "VID (Voltage Identification)",
+    "zhTerm": "電壓識別碼",
+    "category": "pmbus",
+    "en": "A coded output-voltage setting defined by the processor vendor (e.g. Intel VR12/VR13, AMD SVI). The code-to-voltage table depends on the VID type selected in VOUT_MODE.",
+    "zh": "由處理器廠商定義的輸出電壓編碼（例如 Intel VR12/VR13、AMD SVI）。編碼與電壓的對應表取決於 VOUT_MODE 所選的 VID 類型。",
+    "related": [
+      "vout-mode",
+      "avsbus"
+    ]
+  },
+  {
+    "id": "avsbus",
+    "term": "AVSBus",
+    "zhTerm": "自適應電壓調整匯流排",
+    "category": "pmbus",
+    "en": "Adaptive Voltage Scaling Bus, added in PMBus 1.3. A fast point-to-point 3-wire interface (clock, data in, data out) that lets a load such as an ASIC or FPGA adjust its supply voltage in real time.",
+    "zh": "自適應電壓調整匯流排，於 PMBus 1.3 加入。高速點對點三線介面（時脈、資料輸入、資料輸出），讓 ASIC、FPGA 等負載即時調整供電電壓。",
+    "related": [
+      "pmbus",
+      "vid"
+    ]
+  },
+  {
+    "id": "q-format",
+    "term": "Q format (Qm.n)",
+    "zhTerm": "Q 格式（定點數）",
+    "category": "number",
+    "en": "Fixed-point notation: m integer bits (excluding sign) and n fractional bits in a signed two's-complement word. Resolution is 2^−n; range is −2^m to 2^m − 2^−n. Example: Q15 (Q0.15) in 16 bits spans −1 to 0.99997.",
+    "zh": "定點數表示法：在有號二補數字組中，m 個整數位元（不含符號位）與 n 個小數位元。解析度為 2^−n；範圍為 −2^m 至 2^m − 2^−n。例如 16 位元的 Q15（Q0.15）範圍為 −1 至 0.99997。",
+    "formula": "value = integer / 2^n",
+    "related": [
+      "fixed-point",
+      "saturation",
+      "iq-math"
+    ],
+    "calc": "/calc/qformat"
+  },
+  {
+    "id": "fixed-point",
+    "term": "Fixed-point arithmetic",
+    "zhTerm": "定點運算",
+    "category": "number",
+    "en": "Representing fractional numbers as scaled integers so that a controller without an FPU can run control loops quickly. Multiplying two Q-numbers adds their fractional bits, so results must be shifted back and checked for overflow.",
+    "zh": "以縮放後的整數表示小數，讓沒有 FPU 的控制器也能快速執行控制迴路。兩個 Q 格式數相乘時小數位數相加，因此結果需右移還原並檢查溢位。",
+    "related": [
+      "q-format",
+      "saturation"
+    ]
+  },
+  {
+    "id": "iq-math",
+    "term": "IQmath",
+    "zhTerm": "IQmath 定點函式庫",
+    "category": "number",
+    "en": "TI library and convention for 32-bit fixed-point math on C2000 MCUs, where a global Q value (GLOBAL_Q, typically 24) sets the fractional bits of the _iq type.",
+    "zh": "TI 在 C2000 MCU 上使用的 32 位元定點運算函式庫與慣例，以全域 Q 值（GLOBAL_Q，通常為 24）決定 _iq 型別的小數位數。",
+    "related": [
+      "q-format"
+    ]
+  },
+  {
+    "id": "saturation",
+    "term": "Saturation / clamping",
+    "zhTerm": "飽和／限幅",
+    "category": "number",
+    "en": "Limiting a value to its representable or allowed range instead of letting it wrap around on overflow. Essential for duty cycle, integrator state and compensator outputs.",
+    "zh": "數值溢位時將其限制在可表示或允許的範圍內，而不是讓它回繞。對佔空比、積分器狀態與補償器輸出都非常重要。",
+    "related": [
+      "anti-windup",
+      "fixed-point"
+    ]
+  },
+  {
+    "id": "dpwm",
+    "term": "DPWM (Digital PWM)",
+    "zhTerm": "數位 PWM",
+    "category": "pwm",
+    "en": "A PWM generator driven by a counter clocked at f_clk. The number of counts per switching period sets duty-cycle resolution: N_bits = log₂(f_clk / f_sw) for up-count mode (one bit less for up-down count).",
+    "zh": "由 f_clk 驅動之計數器所產生的 PWM。每個開關週期的計數數量決定佔空比解析度：上數模式 N_bits = log₂(f_clk / f_sw)（上下數模式少 1 位元）。",
+    "formula": "N_bits = log₂(f_clk / f_sw)",
+    "related": [
+      "hrpwm",
+      "pwm-resolution",
+      "limit-cycle"
+    ],
+    "calc": "/calc/resolution"
+  },
+  {
+    "id": "pwm-resolution",
+    "term": "PWM resolution",
+    "zhTerm": "PWM 解析度",
+    "category": "pwm",
+    "en": "The smallest duty-cycle (or time) step a PWM can produce. Time step = 1/f_clk (or the HRPWM step); duty step = time step × f_sw. For a buck converter the output voltage step is roughly V_in × duty step.",
+    "zh": "PWM 能產生的最小佔空比（或時間）步階。時間步階 = 1/f_clk（或 HRPWM 步階）；佔空比步階 = 時間步階 × f_sw。對 Buck 轉換器而言輸出電壓步階約為 V_in × 佔空比步階。",
+    "formula": "ΔV_out ≈ V_in · Δt · f_sw",
+    "related": [
+      "dpwm",
+      "hrpwm",
+      "limit-cycle"
+    ],
+    "calc": "/calc/resolution"
+  },
+  {
+    "id": "hrpwm",
+    "term": "HRPWM (High-Resolution PWM)",
+    "zhTerm": "高解析度 PWM",
+    "category": "pwm",
+    "en": "PWM hardware that places edges with sub-clock-cycle precision, typically using delay lines (e.g. TI C2000 micro-edge positioner, ~150 ps steps). It raises effective resolution at high switching frequencies.",
+    "zh": "能以小於一個時脈週期的精度放置 PWM 邊緣的硬體，通常以延遲線實現（例如 TI C2000 的 MEP，步階約 150 ps）。可在高開關頻率下提高有效解析度。",
+    "related": [
+      "dpwm",
+      "pwm-resolution"
+    ],
+    "calc": "/calc/resolution"
+  },
+  {
+    "id": "dither",
+    "term": "Dithering",
+    "zhTerm": "抖動",
+    "category": "pwm",
+    "en": "Alternating the duty cycle between adjacent DPWM levels over several switching periods so the average duty has finer resolution than the hardware step. Increases effective resolution at the cost of low-frequency ripple.",
+    "zh": "在數個開關週期間交替使用相鄰的 DPWM 階層，使平均佔空比的解析度高於硬體步階。可提升有效解析度，代價是出現低頻漣波。",
+    "related": [
+      "dpwm",
+      "limit-cycle"
+    ],
+    "sources": [
+      {
+        "title": "Peterchev – Digital Control of PWM Converters (UC Berkeley EECS-2006-146)",
+        "url": "https://www2.eecs.berkeley.edu/Pubs/TechRpts/2006/EECS-2006-146.html"
+      }
+    ]
+  },
+  {
+    "id": "adc-resolution",
+    "term": "ADC resolution / LSB",
+    "zhTerm": "ADC 解析度",
+    "category": "adc",
+    "en": "The voltage represented by one ADC code: LSB = V_ref / 2^N. Referred to the converter output through a divider of gain k, the output-voltage LSB is V_ref / (2^N · k).",
+    "zh": "ADC 一個碼所代表的電壓：LSB = V_ref / 2^N。若經增益為 k 的分壓器回授，對應到輸出電壓的 LSB 為 V_ref / (2^N · k)。",
+    "formula": "LSB = V_ref / 2^N",
+    "related": [
+      "limit-cycle",
+      "enob",
+      "error-adc"
+    ],
+    "calc": "/calc/resolution"
+  },
+  {
+    "id": "error-adc",
+    "term": "Error ADC (EADC)",
+    "zhTerm": "誤差 ADC",
+    "category": "adc",
+    "en": "A small-range, high-resolution ADC that digitises only the difference between the reference and the feedback voltage (used in TI UCD controllers). It gives fine resolution around the set point without needing a high-bit ADC.",
+    "zh": "只數位化參考電壓與回授電壓差值的小範圍高解析 ADC（用於 TI UCD 控制器）。不需高位元 ADC 即可在設定點附近取得精細解析度。",
+    "related": [
+      "adc-resolution"
+    ]
+  },
+  {
+    "id": "enob",
+    "term": "ENOB",
+    "zhTerm": "有效位元數",
+    "category": "adc",
+    "en": "Effective Number Of Bits: the resolution an ADC actually delivers once noise and distortion are included. ENOB = (SINAD − 1.76 dB) / 6.02 dB.",
+    "zh": "有效位元數：考慮雜訊與失真後 ADC 實際提供的解析度。ENOB = (SINAD − 1.76 dB) / 6.02 dB。",
+    "formula": "ENOB = (SINAD − 1.76) / 6.02",
+    "related": [
+      "adc-resolution"
+    ],
+    "calc": "/calc/resolution"
+  },
+  {
+    "id": "limit-cycle",
+    "term": "Limit-cycle oscillation (LCO)",
+    "zhTerm": "極限環振盪",
+    "category": "control",
+    "en": "A steady-state oscillation in a digitally controlled converter caused by quantization in the ADC and DPWM. A necessary condition (Peterchev & Sanders, 2003) is that the output-voltage step of one DPWM LSB is smaller than the ADC LSB referred to the output, and the loop has integral action. This is necessary, not sufficient.",
+    "zh": "數位控制轉換器中，由 ADC 與 DPWM 量化所造成的穩態振盪。必要條件（Peterchev & Sanders, 2003）為：一個 DPWM LSB 造成的輸出電壓步階須小於換算到輸出端的 ADC LSB，且迴路具有積分作用。此為必要條件而非充分條件。",
+    "formula": "ΔV_DPWM < ΔV_ADC",
+    "related": [
+      "pwm-resolution",
+      "adc-resolution",
+      "dither"
+    ],
+    "calc": "/calc/resolution",
+    "sources": [
+      {
+        "title": "Peterchev & Sanders, Quantization resolution and limit cycling in digitally controlled PWM converters (IEEE TPEL 2003)",
+        "url": "https://scholars.duke.edu/individual/pub792987"
+      },
+      {
+        "title": "Univ. of Toronto – limit cycle analysis",
+        "url": "https://www.ele.utoronto.ca/power_management/cp13.pdf"
+      }
+    ]
+  },
+  {
+    "id": "2p2z",
+    "term": "2P2Z compensator",
+    "zhTerm": "2P2Z 補償器（兩極兩零）",
+    "category": "control",
+    "en": "Two-pole/two-zero discrete compensator, the digital counterpart of an analog Type II. Difference equation: u[n] = B0·e[n] + B1·e[n−1] + B2·e[n−2] − A1·u[n−1] − A2·u[n−2].",
+    "zh": "兩極點／兩零點離散補償器，對應類比 Type II。差分方程式：u[n] = B0·e[n] + B1·e[n−1] + B2·e[n−2] − A1·u[n−1] − A2·u[n−2]。",
+    "formula": "H(z) = (B0 + B1 z⁻¹ + B2 z⁻²) / (1 + A1 z⁻¹ + A2 z⁻²)",
+    "related": [
+      "3p3z",
+      "type-ii",
+      "bilinear"
+    ],
+    "calc": "/calc/compensator",
+    "sources": [
+      {
+        "title": "Microchip – Digital Compensators (2P2Z & 3P3Z)",
+        "url": "https://onlinedocs.microchip.com/oxy/GUID-58EF23A7-D2B1-4EDC-B89F-5D76601073F1-en-US-1/GUID-9C4D5694-E5EE-4589-86DD-CE1237529A67.html"
+      }
+    ]
+  },
+  {
+    "id": "3p3z",
+    "term": "3P3Z compensator",
+    "zhTerm": "3P3Z 補償器（三極三零）",
+    "category": "control",
+    "en": "Three-pole/three-zero discrete compensator, the digital counterpart of an analog Type III, used where extra phase boost is needed (e.g. voltage-mode buck with an LC double pole).",
+    "zh": "三極點／三零點離散補償器，對應類比 Type III，用於需要更多相位提升的場合（例如具 LC 雙極點的電壓模式 Buck）。",
+    "formula": "H(z) = (B0 + B1 z⁻¹ + B2 z⁻² + B3 z⁻³) / (1 + A1 z⁻¹ + A2 z⁻² + A3 z⁻³)",
+    "related": [
+      "2p2z",
+      "type-iii",
+      "bilinear"
+    ],
+    "calc": "/calc/compensator",
+    "sources": [
+      {
+        "title": "TI – Digital power supply considerations for the analog engineer (SPRY151)",
+        "url": "https://ti.com/lit/pdf/spry151"
+      }
+    ]
+  },
+  {
+    "id": "type-ii",
+    "term": "Type II compensator",
+    "zhTerm": "Type II 補償器（第二型）",
+    "category": "control",
+    "en": "Analog compensator with an origin pole, one zero and one high-frequency pole. Gives up to 90° of phase boost; typical for current-mode control.",
+    "zh": "具原點極點、一個零點與一個高頻極點的類比補償器。最多提供 90° 相位提升，常用於電流模式控制。",
+    "formula": "G(s) = K·(1 + s/ωz) / (s·(1 + s/ωp))",
+    "related": [
+      "2p2z",
+      "type-iii"
+    ],
+    "calc": "/calc/compensator"
+  },
+  {
+    "id": "type-iii",
+    "term": "Type III compensator",
+    "zhTerm": "Type III 補償器（第三型）",
+    "category": "control",
+    "en": "Analog compensator with an origin pole, two zeros and two high-frequency poles. Gives up to 180° of phase boost; typical for voltage-mode control.",
+    "zh": "具原點極點、兩個零點與兩個高頻極點的類比補償器。最多提供 180° 相位提升，常用於電壓模式控制。",
+    "formula": "G(s) = K·(1 + s/ωz1)(1 + s/ωz2) / (s·(1 + s/ωp1)(1 + s/ωp2))",
+    "related": [
+      "3p3z",
+      "type-ii"
+    ],
+    "calc": "/calc/compensator"
+  },
+  {
+    "id": "pid",
+    "term": "PID controller",
+    "zhTerm": "PID 控制器",
+    "category": "control",
+    "en": "Proportional-Integral-Derivative control. In digital power the derivative is usually filtered, which makes a discrete PID equivalent to a 2P2Z.",
+    "zh": "比例-積分-微分控制。在數位電源中微分項通常會加上濾波，使離散 PID 等效於 2P2Z。",
+    "formula": "G(s) = Kp + Ki/s + Kd·s / (1 + s/ωd)",
+    "related": [
+      "2p2z",
+      "anti-windup"
+    ],
+    "calc": "/calc/compensator"
+  },
+  {
+    "id": "bilinear",
+    "term": "Bilinear (Tustin) transform",
+    "zhTerm": "雙線性轉換（Tustin）",
+    "category": "control",
+    "en": "Maps a continuous transfer function to discrete time by substituting s = (2/T)·(z − 1)/(z + 1). It preserves stability; frequency warping can be corrected by pre-warping at a chosen frequency.",
+    "zh": "以 s = (2/T)·(z − 1)/(z + 1) 將連續時間轉移函數轉換為離散時間。可保持穩定性；頻率扭曲可藉由在選定頻率預扭曲（pre-warping）修正。",
+    "formula": "s = (2/T)·(z − 1)/(z + 1)",
+    "related": [
+      "2p2z",
+      "3p3z",
+      "sampling-delay"
+    ],
+    "calc": "/calc/compensator"
+  },
+  {
+    "id": "sampling-delay",
+    "term": "Sampling & computation delay",
+    "zhTerm": "取樣與運算延遲",
+    "category": "control",
+    "en": "Time from ADC sampling to the PWM update, plus the PWM's own zero-order-hold effect. Each delay T_d adds phase lag of 360°·f·T_d, which limits achievable crossover frequency.",
+    "zh": "從 ADC 取樣到 PWM 更新所經過的時間，加上 PWM 本身的零階保持效應。每個延遲 T_d 會增加 360°·f·T_d 的相位落後，限制可達成的穿越頻率。",
+    "formula": "φ_lag = 360° · f · T_d",
+    "related": [
+      "bilinear",
+      "crossover"
+    ]
+  },
+  {
+    "id": "crossover",
+    "term": "Crossover frequency / phase margin",
+    "zhTerm": "穿越頻率／相位裕度",
+    "category": "control",
+    "en": "Crossover f_c is where loop gain equals 0 dB; phase margin is 180° plus the loop phase at f_c. Digital loops typically target f_c ≤ f_s/10 because of sampling delay; 45°–60° phase margin is common.",
+    "zh": "穿越頻率 f_c 為迴路增益等於 0 dB 處；相位裕度為 180° 加上 f_c 處的迴路相位。由於取樣延遲，數位迴路通常設定 f_c ≤ f_s/10；常見相位裕度為 45°–60°。",
+    "related": [
+      "sampling-delay",
+      "2p2z"
+    ],
+    "calc": "/calc/compensator"
+  },
+  {
+    "id": "anti-windup",
+    "term": "Integrator anti-windup",
+    "zhTerm": "積分抗飽和",
+    "category": "control",
+    "en": "Stops the integrator from accumulating when the output is saturated (e.g. duty at its limit), avoiding large overshoot when the converter leaves saturation.",
+    "zh": "在輸出飽和時（例如佔空比到達上限）停止積分器累加，避免轉換器離開飽和時產生大幅過衝。",
+    "related": [
+      "saturation",
+      "pid"
+    ]
+  },
+  {
+    "id": "soft-start",
+    "term": "Soft start",
+    "zhTerm": "軟啟動",
+    "category": "control",
+    "en": "Ramping the reference voltage from zero to the target over a set time (PMBus TON_RISE) to limit inrush current and overshoot.",
+    "zh": "在設定時間內（PMBus TON_RISE）將參考電壓由零逐步升至目標值，以限制湧入電流與過衝。",
+    "related": [
+      "pmbus"
+    ]
+  },
+  {
+    "id": "ccm-dcm",
+    "term": "CCM / DCM",
+    "zhTerm": "連續／不連續導通模式",
+    "category": "converter",
+    "en": "Continuous vs. Discontinuous Conduction Mode. In CCM the inductor current never reaches zero; in DCM it does, changing the converter's small-signal model and gain.",
+    "zh": "連續與不連續導通模式。CCM 時電感電流不會降到零；DCM 時則會，因而改變轉換器的小信號模型與增益。",
+    "related": [
+      "buck-duty"
+    ]
+  },
+  {
+    "id": "buck-duty",
+    "term": "Buck duty cycle",
+    "zhTerm": "Buck 佔空比",
+    "category": "converter",
+    "en": "In an ideal buck in CCM, D = V_out / V_in. Therefore one DPWM duty step ΔD changes V_out by about V_in · ΔD.",
+    "zh": "理想 Buck 在 CCM 時 D = V_out / V_in。因此每一個 DPWM 佔空比步階 ΔD 約造成 V_in · ΔD 的輸出電壓變化。",
+    "formula": "D = V_out / V_in",
+    "related": [
+      "pwm-resolution",
+      "ccm-dcm"
+    ],
+    "calc": "/calc/resolution"
+  }
+]
