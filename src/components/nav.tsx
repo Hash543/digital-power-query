@@ -13,7 +13,11 @@ export const calcLinks = [
 
 export function Nav() {
   const path = usePathname();
-  const links = [{ href: "/terms", en: "Terms", zh: "名詞" }, ...calcLinks];
+  const links = [
+    { href: "/terms", en: "Terms", zh: "名詞" },
+    { href: "/architectures", en: "Architectures", zh: "架構" },
+    ...calcLinks,
+  ];
   return (
     <header className="sticky top-0 z-10 border-b border-line bg-surface/90 backdrop-blur">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">

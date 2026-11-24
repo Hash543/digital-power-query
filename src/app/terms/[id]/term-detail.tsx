@@ -25,6 +25,32 @@ export function TermDetail({ term: t }: { term: Term }) {
         <div className="rounded-md bg-panel px-4 py-3 font-mono text-sm">{t.formula}</div>
       )}
 
+      {(t.pros || t.cons) && (
+        <div className="grid gap-4 text-sm sm:grid-cols-2">
+          {[
+            ["pros", t.pros, <T key="p" en="Strengths" zh="優點" />],
+            ["cons", t.cons, <T key="c" en="Trade-offs" zh="缺點" />],
+          ].map(([k, list, title]) =>
+            list ? (
+              <div key={k as string}>
+                <h2 className="mb-1 font-semibold">{title as React.ReactNode}</h2>
+                <ul className="list-disc space-y-0.5 pl-5 text-muted">
+                  {(list as NonNullable<Term["pros"]>)[lang].map((x) => (
+                    <li key={x}>{x}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null,
+          )}
+        </div>
+      )}
+
+      {t.category === "architecture" && (
+        <Link href={`/architectures#${t.id}`} className="inline-block text-sm text-accent">
+          <T en="See block diagram on the architectures page →" zh="到架構介紹頁看方塊圖 →" />
+        </Link>
+      )}
+
       {t.calc && (
         <Link href={t.calc} className="inline-block rounded-md bg-accent px-4 py-2 text-sm font-medium text-white">
           <T en="Open calculator →" zh="開啟計算工具 →" />

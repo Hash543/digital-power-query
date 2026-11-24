@@ -508,5 +508,464 @@
       "ccm-dcm"
     ],
     "calc": "/calc/resolution"
+  },
+  {
+    "id": "centralized-power",
+    "term": "Centralized Power Architecture (CPA)",
+    "zhTerm": "集中式電源架構",
+    "category": "architecture",
+    "archGroup": "system",
+    "en": "A single central supply generates every output rail and delivers them to the loads through cables and bus bars. Simple, but low-voltage, high-current rails suffer large distribution losses and poor transient response at the load.",
+    "zh": "由單一中央電源產生所有輸出電壓，經由電纜與匯流排送到各負載。架構簡單，但低電壓、大電流的電源軌在配電路徑上損耗大，負載端的暫態響應也差。",
+    "pros": {
+      "en": [
+        "Few parts, simple design",
+        "One place to cool and monitor"
+      ],
+      "zh": [
+        "零件少、設計簡單",
+        "散熱與監控集中在一處"
+      ]
+    },
+    "cons": {
+      "en": [
+        "High I²R loss for low-voltage rails",
+        "Slow load transients",
+        "Single point of failure"
+      ],
+      "zh": [
+        "低壓電源軌 I²R 損耗高",
+        "負載暫態響應慢",
+        "單點故障"
+      ]
+    },
+    "related": [
+      "distributed-power",
+      "iba"
+    ],
+    "sources": [
+      {
+        "title": "Mouser – The Modern Distributed Power Architecture",
+        "url": "https://resources.mouser.com/explore-all/the-modern-distributed-power-architecture"
+      }
+    ]
+  },
+  {
+    "id": "distributed-power",
+    "term": "Distributed Power Architecture (DPA)",
+    "zhTerm": "分散式電源架構",
+    "category": "architecture",
+    "archGroup": "system",
+    "en": "A front end distributes a relatively high bus voltage (e.g. 48 V or 300 V) across the system, and isolated, regulated DC/DC converters (\"bricks\") near each load produce the final rails. Lower distribution current and easier expansion, at the cost of many isolated converters.",
+    "zh": "前級在系統中配送較高的匯流排電壓（例如 48 V 或 300 V），再由靠近各負載的隔離式穩壓 DC/DC 轉換器（「磚型模組」）產生最終電壓。配電電流較小、擴充容易，但需要大量隔離式轉換器。",
+    "pros": {
+      "en": [
+        "Low distribution current",
+        "Easy to add rails",
+        "Fault in one converter does not take down the rest"
+      ],
+      "zh": [
+        "配電電流低",
+        "容易增加電源軌",
+        "單一轉換器故障不影響其他"
+      ]
+    },
+    "cons": {
+      "en": [
+        "Many isolated converters: cost and board area",
+        "Each brick needs its own regulation and protection"
+      ],
+      "zh": [
+        "需要多個隔離式轉換器，成本與面積高",
+        "每個模組都需自己的穩壓與保護"
+      ]
+    },
+    "related": [
+      "centralized-power",
+      "iba",
+      "bus-converter"
+    ],
+    "sources": [
+      {
+        "title": "DigiKey – Distributed Power Architecture (DPA) Choices Using Power Modules",
+        "url": "https://www.digikey.com/en/articles/distributed-power-architecture-dpa-choices-using-power-modules"
+      }
+    ]
+  },
+  {
+    "id": "iba",
+    "term": "Intermediate Bus Architecture (IBA)",
+    "zhTerm": "中間匯流排架構",
+    "category": "architecture",
+    "archGroup": "system",
+    "en": "A two-stage refinement of DPA. One isolated bus converter (often unregulated or semi-regulated, fixed ratio) turns 48 V into a 12 V, 9.6 V or 5–8 V intermediate bus; non-isolated point-of-load (niPOL) bucks then regulate each rail. The dominant architecture in telecom, servers and networking boards.",
+    "zh": "DPA 的兩級式改良。一個隔離式匯流排轉換器（常為非穩壓或半穩壓、固定比例）將 48 V 轉為 12 V、9.6 V 或 5–8 V 的中間匯流排，再由非隔離的負載點（niPOL）Buck 轉換器分別穩壓各電源軌。是通訊、伺服器與網通板卡最主流的架構。",
+    "pros": {
+      "en": [
+        "Only one isolated stage",
+        "Cheap, plentiful POL bucks",
+        "Easy to add rails"
+      ],
+      "zh": [
+        "只需一級隔離",
+        "POL Buck 便宜且選擇多",
+        "容易增加電源軌"
+      ]
+    },
+    "cons": {
+      "en": [
+        "Two conversion stages multiply losses",
+        "Intermediate bus voltage is a compromise between distribution loss and POL step-down ratio"
+      ],
+      "zh": [
+        "兩級轉換使損耗相乘",
+        "中間匯流排電壓需在配電損耗與 POL 降壓比之間取捨"
+      ]
+    },
+    "related": [
+      "bus-converter",
+      "pol",
+      "direct-48v",
+      "fpa"
+    ],
+    "sources": [
+      {
+        "title": "Electronic Design – What's the difference between IBA and FPA?",
+        "url": "https://www.electronicdesign.com/boards/what-s-difference-between-iba-and-fpa"
+      },
+      {
+        "title": "MPS – Two-stage solution for 48 V power distribution",
+        "url": "https://www.monolithicpower.com/en/increasing-the-power-density-and-efficacy-of-datacenters/"
+      }
+    ]
+  },
+  {
+    "id": "bus-converter",
+    "term": "Bus converter (IBC / DCX)",
+    "zhTerm": "匯流排轉換器",
+    "category": "architecture",
+    "archGroup": "system",
+    "en": "The first stage of an IBA: an isolated converter, often a fixed-ratio (e.g. 4:1 or 8:1) DC transformer (DCX) running near 50 % duty for high efficiency. Unregulated types let the bus follow the input; semi-regulated or regulated types narrow the bus range for the POLs.",
+    "zh": "IBA 的第一級：隔離式轉換器，常為固定比例（例如 4:1 或 8:1）的直流變壓器（DCX），以接近 50% 佔空比運作以取得高效率。非穩壓型的匯流排電壓隨輸入變動；半穩壓或穩壓型則縮小匯流排範圍，方便後級 POL。",
+    "related": [
+      "iba",
+      "fpa"
+    ]
+  },
+  {
+    "id": "pol",
+    "term": "Point-of-Load converter (POL)",
+    "zhTerm": "負載點轉換器",
+    "category": "architecture",
+    "archGroup": "system",
+    "en": "A non-isolated converter, usually a synchronous buck, placed right next to the load (CPU, FPGA, ASIC, DDR) so the low-voltage, high-current path is as short as possible. Digital POLs add PMBus telemetry, sequencing and margining.",
+    "zh": "非隔離轉換器（通常為同步 Buck），放在負載（CPU、FPGA、ASIC、DDR）旁，使低電壓、大電流路徑盡量短。數位 POL 另提供 PMBus 遙測、上電時序與電壓邊際調整功能。",
+    "related": [
+      "iba",
+      "pmbus",
+      "multiphase-digital"
+    ],
+    "calc": "/calc/resolution"
+  },
+  {
+    "id": "fpa",
+    "term": "Factorized Power Architecture (FPA)",
+    "zhTerm": "因式分解電源架構",
+    "category": "architecture",
+    "archGroup": "system",
+    "en": "Splits the converter into a regulator and a transformer: a pre-regulator (PRM) creates a controlled \"factorized bus\", and a fixed-ratio current multiplier (VTM) at each load does isolation and step-down. Aimed at very high-current, low-voltage loads. Introduced by Vicor; vendor efficiency and density claims should be checked independently.",
+    "zh": "把轉換器拆成「穩壓」與「變壓」兩部分：前級穩壓器（PRM）產生受控的「因式分解匯流排」，再由每個負載旁的固定比例電流倍增器（VTM）負責隔離與降壓。適用於極大電流、低電壓的負載。由 Vicor 提出；廠商宣稱的效率與功率密度數據建議另行驗證。",
+    "pros": {
+      "en": [
+        "Current multiplication right at the load",
+        "Regulation and isolation sized independently"
+      ],
+      "zh": [
+        "電流在負載端才倍增",
+        "穩壓與隔離可分別最佳化"
+      ]
+    },
+    "cons": {
+      "en": [
+        "Largely single-vendor ecosystem",
+        "Feed-forward regulation across the VTM ratio"
+      ],
+      "zh": [
+        "生態系多半依賴單一廠商",
+        "需跨越 VTM 變比做前饋穩壓"
+      ]
+    },
+    "related": [
+      "iba",
+      "bus-converter"
+    ],
+    "sources": [
+      {
+        "title": "DigiKey – Factorized Power Architecture (FPA)",
+        "url": "https://www.digikey.com/en/articles/factorized-power-architecture-fpa-delivers-higher-density-efficiency-and-flexibility"
+      }
+    ]
+  },
+  {
+    "id": "direct-48v",
+    "term": "48 V direct-to-POL (single-stage)",
+    "zhTerm": "48 V 直接轉負載點（單級）",
+    "category": "architecture",
+    "archGroup": "system",
+    "en": "Converts the 48 V rack bus (e.g. OCP Open Rack) directly to ~1 V at the processor in one stage, usually with a transformer-based or hybrid switched-capacitor topology. Removes the intermediate bus; competes with two-stage 48 V → 12 V (or 5–8 V) → 1 V solutions.",
+    "zh": "將 48 V 機櫃匯流排（例如 OCP Open Rack）以單一級直接轉為處理器所需的約 1 V，通常採用含變壓器或混合式切換電容拓撲。省去中間匯流排；與兩級式 48 V → 12 V（或 5–8 V）→ 1 V 方案互相競爭。",
+    "pros": {
+      "en": [
+        "One stage, no intermediate bus",
+        "Lower distribution current than 12 V racks"
+      ],
+      "zh": [
+        "單一級、無中間匯流排",
+        "配電電流比 12 V 機櫃低"
+      ]
+    },
+    "cons": {
+      "en": [
+        "Very high step-down ratio is hard to do efficiently with a plain buck",
+        "Less mature, fewer standard parts than two-stage"
+      ],
+      "zh": [
+        "極高降壓比難以用一般 Buck 高效實現",
+        "成熟度與標準零件數量不如兩級式"
+      ]
+    },
+    "related": [
+      "iba",
+      "pol"
+    ],
+    "sources": [
+      {
+        "title": "TI – 48 V power architecture comparison (SSZTB19)",
+        "url": "https://edgeworker.ti.com/lit/pdf/ssztb19"
+      },
+      {
+        "title": "Flex – Power architectures: a direct approach is more efficient",
+        "url": "https://flex.com/resources/power-architectures-a-direct-approach-is-more-efficient"
+      }
+    ]
+  },
+  {
+    "id": "digitally-managed",
+    "term": "Digitally managed power",
+    "zhTerm": "數位管理電源",
+    "category": "architecture",
+    "archGroup": "control",
+    "en": "The control loop stays analog; a digital block (an on-chip engine or a separate housekeeping MCU / power sequencer) handles configuration, sequencing, margining, fault logging and PMBus telemetry. Keeps proven analog loop behavior while adding observability.",
+    "zh": "控制迴路仍為類比；由數位電路（晶片內引擎或獨立的管理 MCU／電源時序控制器）負責設定、上電時序、電壓邊際、故障記錄與 PMBus 遙測。保留成熟的類比迴路特性，同時提升可觀測性。",
+    "pros": {
+      "en": [
+        "Analog loop bandwidth and no quantization effects",
+        "Adds telemetry to existing designs"
+      ],
+      "zh": [
+        "類比迴路頻寬高、無量化效應",
+        "可為既有設計加上遙測"
+      ]
+    },
+    "cons": {
+      "en": [
+        "Compensation still set by external R/C",
+        "Extra parts if the manager is a separate chip"
+      ],
+      "zh": [
+        "補償仍需外部 R/C 設定",
+        "若管理器為獨立晶片則需額外零件"
+      ]
+    },
+    "related": [
+      "digitally-controlled",
+      "pmbus"
+    ],
+    "sources": [
+      {
+        "title": "Power Systems Design – Digital power supply control",
+        "url": "https://www.powersystemsdesign.com/articles/digital-power-supply-control/22/5835"
+      }
+    ]
+  },
+  {
+    "id": "digitally-controlled",
+    "term": "Digitally controlled power (digital loop)",
+    "zhTerm": "數位控制電源（數位迴路）",
+    "category": "architecture",
+    "archGroup": "control",
+    "en": "The feedback loop itself is digital: an ADC (or error ADC) samples the output, a digital compensator (PID / 2P2Z / 3P3Z) computes the duty cycle, and a DPWM drives the switches. Enables adaptive and non-linear control and programmable compensation, but brings sampling delay and quantization (see limit cycles).",
+    "zh": "回授迴路本身為數位：ADC（或誤差 ADC）取樣輸出，數位補償器（PID／2P2Z／3P3Z）計算佔空比，再由 DPWM 驅動開關。可實現自適應與非線性控制、補償參數可程式化，但會引入取樣延遲與量化效應（見極限環）。",
+    "pros": {
+      "en": [
+        "Programmable compensation, no R/C changes",
+        "Adaptive, non-linear and multi-mode control",
+        "Built-in telemetry"
+      ],
+      "zh": [
+        "補償可程式化，不必更換 R/C",
+        "可做自適應、非線性與多模式控制",
+        "內建遙測"
+      ]
+    },
+    "cons": {
+      "en": [
+        "Sampling and computation delay limit bandwidth",
+        "ADC/DPWM resolution and limit cycles",
+        "Firmware and tooling effort"
+      ],
+      "zh": [
+        "取樣與運算延遲限制頻寬",
+        "ADC／DPWM 解析度與極限環問題",
+        "需投入韌體與工具開發"
+      ]
+    },
+    "related": [
+      "digitally-managed",
+      "2p2z",
+      "limit-cycle",
+      "dpwm",
+      "error-adc"
+    ],
+    "calc": "/calc/compensator",
+    "sources": [
+      {
+        "title": "TI – Digital control seminar (Topic 7)",
+        "url": "https://www.ti.com/download/trng/docs/seminar/Topic_7_Hagen.pdf"
+      },
+      {
+        "title": "Control Engineering – Convert power with digital signal controllers",
+        "url": "https://www.controleng.com/articles/convert-power-with-digital-signal-controllers/"
+      }
+    ]
+  },
+  {
+    "id": "dsc-based",
+    "term": "MCU / DSC-based controller",
+    "zhTerm": "MCU／DSC 架構控制器",
+    "category": "architecture",
+    "archGroup": "control",
+    "en": "A general-purpose digital signal controller (e.g. TI C2000, Microchip dsPIC33, ST STM32G4) runs the control loop in firmware using on-chip high-resolution PWM, fast ADCs and comparators. Most flexible option: any topology or control law, plus PFC, communications and housekeeping on one chip.",
+    "zh": "以通用數位訊號控制器（例如 TI C2000、Microchip dsPIC33、ST STM32G4）在韌體中執行控制迴路，搭配晶片內的高解析 PWM、高速 ADC 與比較器。彈性最高：任何拓撲或控制法則皆可實現，並可在同一顆晶片上整合 PFC、通訊與系統管理。",
+    "pros": {
+      "en": [
+        "Any topology / control law",
+        "One chip for loop, PFC and comms"
+      ],
+      "zh": [
+        "可實現任何拓撲與控制法則",
+        "迴路、PFC 與通訊整合於一顆晶片"
+      ]
+    },
+    "cons": {
+      "en": [
+        "Loop rate limited by CPU cycles",
+        "Requires firmware development and validation"
+      ],
+      "zh": [
+        "迴路更新率受 CPU 週期限制",
+        "需開發與驗證韌體"
+      ]
+    },
+    "related": [
+      "state-machine-controller",
+      "iq-math",
+      "hrpwm",
+      "2p2z"
+    ],
+    "sources": [
+      {
+        "title": "element14 – Benefits of digitally controlled DC power",
+        "url": "https://community.element14.com/learn/learning-center/the-tech-connection/w/documents/20725/tech-spotlight-the-benefits-of-digitally-controlled-dc-power"
+      }
+    ]
+  },
+  {
+    "id": "state-machine-controller",
+    "term": "Fixed-function / state-machine controller",
+    "zhTerm": "固定功能／狀態機控制器",
+    "category": "architecture",
+    "archGroup": "control",
+    "en": "A dedicated digital power IC whose loop runs in hardware (filter blocks, state machines) and is configured through registers or PMBus with a vendor GUI rather than user firmware. Examples include TI UCD and ADI ADP105x families. Fast to design in, but limited to the topologies the chip supports.",
+    "zh": "專用的數位電源 IC，控制迴路由硬體（濾波器區塊、狀態機）執行，透過暫存器或 PMBus 搭配廠商 GUI 設定，而非使用者韌體。例如 TI UCD 與 ADI ADP105x 系列。導入快速，但僅限晶片支援的拓撲。",
+    "pros": {
+      "en": [
+        "No firmware to write",
+        "Hardware loop runs at high sample rates"
+      ],
+      "zh": [
+        "不需撰寫韌體",
+        "硬體迴路取樣率高"
+      ]
+    },
+    "cons": {
+      "en": [
+        "Limited to supported topologies and features",
+        "Tied to the vendor's design tool"
+      ],
+      "zh": [
+        "受限於支援的拓撲與功能",
+        "依賴廠商設計工具"
+      ]
+    },
+    "related": [
+      "dsc-based",
+      "error-adc",
+      "pmbus"
+    ],
+    "sources": [
+      {
+        "title": "Analog Devices – Designing digital power supplies with a state machine",
+        "url": "https://www.analog.com/en/technical-articles/designing-digital-power-supplies-with-a-state-machine.html"
+      }
+    ]
+  },
+  {
+    "id": "fpga-control",
+    "term": "FPGA-based control",
+    "zhTerm": "FPGA 架構控制",
+    "category": "architecture",
+    "archGroup": "control",
+    "en": "The control loop is implemented as parallel logic in an FPGA, giving deterministic, very short loop latency and sub-nanosecond PWM via delay lines. Common in research, high-frequency GaN/SiC converters and multi-level inverters; needs HDL skills and external ADCs.",
+    "zh": "控制迴路以 FPGA 中的平行邏輯實現，延遲固定且極短，並可藉延遲線產生次奈秒等級的 PWM。常見於研究、高頻 GaN／SiC 轉換器與多階逆變器；需要 HDL 能力並搭配外部 ADC。",
+    "pros": {
+      "en": [
+        "Lowest, deterministic latency",
+        "Massive parallelism for multi-phase / multi-level"
+      ],
+      "zh": [
+        "延遲最低且固定",
+        "高度平行，適合多相／多階"
+      ]
+    },
+    "cons": {
+      "en": [
+        "HDL design effort",
+        "Higher cost and power than a DSC"
+      ],
+      "zh": [
+        "需投入 HDL 設計",
+        "成本與功耗高於 DSC"
+      ]
+    },
+    "related": [
+      "dsc-based",
+      "hrpwm"
+    ]
+  },
+  {
+    "id": "multiphase-digital",
+    "term": "Digital multiphase controller",
+    "zhTerm": "數位多相控制器",
+    "category": "architecture",
+    "archGroup": "control",
+    "en": "Controller that drives several interleaved buck phases (with smart power stages) for CPU/GPU/AI-accelerator rails. Digital loops add phase shedding, current balancing, AVS/SVID/SVI3 interfaces, non-linear transient response and PMBus telemetry.",
+    "zh": "驅動多個交錯 Buck 相位（搭配智慧功率級）的控制器，用於 CPU、GPU 與 AI 加速器電源軌。數位迴路提供相位增減、電流平衡、AVS／SVID／SVI3 介面、非線性暫態響應與 PMBus 遙測。",
+    "related": [
+      "pol",
+      "vid",
+      "avsbus",
+      "digitally-controlled"
+    ]
   }
 ]

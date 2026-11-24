@@ -8,6 +8,11 @@ import { TextInput } from "@/components/ui";
 
 const tools = [
   {
+    href: "/architectures",
+    en: ["Power architectures", "CPA, DPA, IBA, FPA, 48 V direct; digitally managed vs. controlled, DSC, state-machine and FPGA control."],
+    zh: ["電源架構介紹", "CPA、DPA、IBA、FPA、48 V 直轉；數位管理與數位控制、DSC、狀態機與 FPGA 控制。"],
+  },
+  {
     href: "/calc/pmbus",
     en: ["PMBus data formats", "LINEAR11, LINEAR16 / VOUT_MODE, DIRECT encode & decode, PEC CRC-8."],
     zh: ["PMBus 資料格式", "LINEAR11、LINEAR16／VOUT_MODE、DIRECT 編碼與解碼，PEC CRC-8。"],

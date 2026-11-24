@@ -6,7 +6,8 @@ A Next.js (App Router) site for looking up digital power terms (English / 繁體
 
 | Page | What it does |
 | --- | --- |
-| `/terms` | Searchable bilingual glossary (PMBus, number formats, PWM, ADC, control loop), with formulas, related terms and sources |
+| `/terms` | Searchable bilingual glossary (PMBus, number formats, PWM, ADC, control loop, architectures), with formulas, related terms and sources |
+| `/architectures` | Power-delivery (CPA, DPA, IBA, FPA, 48 V direct-to-POL) and digital-control (managed vs. controlled, DSC, state machine, FPGA, multiphase) architectures with block diagrams and trade-offs |
 | `/calc/pmbus` | LINEAR11, LINEAR16 / VOUT_MODE, DIRECT encode & decode, PEC (CRC-8) |
 | `/calc/qformat` | Qm.n range and resolution, real ↔ hex with rounding and saturation |
 | `/calc/resolution` | DPWM / HRPWM bits, ADC LSB, Vout step, Peterchev–Sanders limit-cycle check |
