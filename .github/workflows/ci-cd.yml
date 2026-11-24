@@ -1,0 +1,100 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: Lint, test, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Generate route types
+        run: npx next typegen
+
+      - run: npm run lint
+      - run: npx tsc --noEmit
+      - run: npm test
+
+      - name: Build
+        run: npm run build
+        env:
+          APP_COMMIT: ${{ github.sha }}
+          NEXT_TELEMETRY_DISABLED: 1
+
+      - name: Package release
+        run: bash deploy/package-release.sh app-${{ github.sha }}.tar.gz
+
+      - uses: actions/upload-artifact@v4
+        if: github.event_name != 'pull_request'
+        with:
+          name: release
+          path: app-${{ github.sha }}.tar.gz
+          retention-days: 7
+
+  deploy:
+    name: Deploy to VPS
+    needs: ci
+    # Set the repository variable DEPLOY_ENABLED=true once the VPS and secrets are ready.
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    env:
+      APP_DIR: /opt/digital-power-query
+      SHA: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: deploy
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: release
+
+      - name: Configure SSH
+        env:
+          SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+          HOST: ${{ secrets.VPS_HOST }}
+          PORT: ${{ secrets.VPS_PORT || '22' }}
+          USER: ${{ secrets.VPS_USER }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          cat > ~/.ssh/config <<EOF
+          Host vps
+            HostName $HOST
+            Port $PORT
+            User $USER
+            IdentityFile ~/.ssh/id_deploy
+            IdentitiesOnly yes
+            StrictHostKeyChecking yes
+          EOF
+
+      - name: Upload release
+        run: |
+          ssh vps "mkdir -p $APP_DIR/incoming $APP_DIR/releases $APP_DIR/bin"
+          scp app-$SHA.tar.gz vps:$APP_DIR/incoming/
+          scp deploy/remote-deploy.sh vps:$APP_DIR/bin/remote-deploy.sh
+
+      - name: Activate release
+        run: ssh vps "bash $APP_DIR/bin/remote-deploy.sh $SHA"

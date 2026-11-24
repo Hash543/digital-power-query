@@ -35,6 +35,10 @@ PMBus ops: `linear11-decode|encode`, `linear16-decode|encode` (with `voutMode`),
 - `src/app/api/`: route handlers
 - `src/app/calc/`, `src/app/terms/`: pages
 
+## Deployment
+
+GitHub Actions ([.github/workflows/ci-cd.yml](.github/workflows/ci-cd.yml)) runs CI on every push and pull request. When `main` is green, it deploys the standalone build to the VPS at `/opt/digital-power-query`, where systemd runs it behind Apache. One-time VPS and GitHub setup: [deploy/README.md](deploy/README.md).
+
 ## Development
 
 ```

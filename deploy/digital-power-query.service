@@ -1,0 +1,32 @@
+# /etc/systemd/system/digital-power-query.service
+[Unit]
+Description=Digital Power Query (Next.js)
+After=network.target
+
+[Service]
+Type=simple
+User=deploy
+Group=deploy
+WorkingDirectory=/opt/digital-power-query/current
+Environment=NODE_ENV=production
+# Uncommon port to avoid clashing with other services (3000, 8080, …; 18417 = claw-monitor).
+# To change it, set PORT here (or PORT=… in shared/.env, which overrides this line),
+# then update the Apache ProxyPass. The deploy script reads the port from either place.
+Environment=PORT=18629
+# Listen on localhost only; Apache proxies public traffic.
+Environment=HOSTNAME=127.0.0.1
+# Optional runtime settings (not committed to git); loaded last, so it overrides the above.
+EnvironmentFile=-/opt/digital-power-query/shared/.env
+ExecStart=/usr/bin/node server.js
+Restart=on-failure
+RestartSec=3
+
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/opt/digital-power-query
+
+[Install]
+WantedBy=multi-user.target
