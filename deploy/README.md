@@ -83,7 +83,7 @@ In the repo, go to **Settings → Environments** and create an environment named
 | `VPS_PORT` | SSH port (optional, default 22) |
 | `VPS_USER` | `deploy` |
 | `VPS_SSH_KEY` | contents of the private key `dpq_deploy` |
-| `VPS_KNOWN_HOSTS` | output of `ssh-keyscan -p <port> <host>`, checked against the VPS fingerprint |
+| `VPS_KNOWN_HOSTS` | output of `ssh-keyscan -p <port> <host>`, checked against the VPS fingerprint (`ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub` on the VPS). Only the key type and key are used, so it doesn't matter whether you scanned the IP or the domain name. The deploy log prints the pinned fingerprints. |
 
 Finally, under **Settings → Secrets and variables → Actions → Variables**, add the repository variable `DEPLOY_ENABLED` = `true`. Until it is set, pushes run CI only and the deploy job is skipped.
 

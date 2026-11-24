@@ -76,15 +76,28 @@ jobs:
           PORT: ${{ secrets.VPS_PORT || '22' }}
           USER: ${{ secrets.VPS_USER }}
         run: |
+          trim() { printf '%s' "$1" | tr -d '[:space:]'; }
+          HOST="$(trim "$HOST")"; PORT="$(trim "$PORT")"; USER="$(trim "$USER")"
           install -m 700 -d ~/.ssh
-          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_deploy
+          printf '%s\n' "$SSH_KEY" | tr -d '\r' > ~/.ssh/id_deploy
           chmod 600 ~/.ssh/id_deploy
-          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          # Keep only the key lines of VPS_KNOWN_HOSTS (drops comments, CRLF and stray text) and
+          # pin them to the alias "vps". With HostKeyAlias they then match whether VPS_HOST is an
+          # IP or a domain name, and whatever SSH port is used.
+          printf '%s\n' "$KNOWN_HOSTS" | tr -d '\r' \
+            | awk '$2 ~ /^(ssh-|ecdsa-|sk-)/ { print "vps", $2, $3 }' > ~/.ssh/known_hosts
+          if [ ! -s ~/.ssh/known_hosts ]; then
+            echo "VPS_KNOWN_HOSTS contains no host keys (expected output of ssh-keyscan)" >&2
+            exit 1
+          fi
+          echo "Pinned host key fingerprints:"
+          ssh-keygen -lf ~/.ssh/known_hosts
           cat > ~/.ssh/config <<EOF
           Host vps
             HostName $HOST
             Port $PORT
             User $USER
+            HostKeyAlias vps
             IdentityFile ~/.ssh/id_deploy
             IdentitiesOnly yes
             StrictHostKeyChecking yes
