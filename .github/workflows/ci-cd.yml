@@ -81,13 +81,19 @@ jobs:
           install -m 700 -d ~/.ssh
           printf '%s\n' "$SSH_KEY" | tr -d '\r' > ~/.ssh/id_deploy
           chmod 600 ~/.ssh/id_deploy
-          # Keep only the key lines of VPS_KNOWN_HOSTS (drops comments, CRLF and stray text) and
-          # pin them to the alias "vps". With HostKeyAlias they then match whether VPS_HOST is an
-          # IP or a domain name, and whatever SSH port is used.
-          printf '%s\n' "$KNOWN_HOSTS" | tr -d '\r' \
-            | awk '$2 ~ /^(ssh-|ecdsa-|sk-)/ { print "vps", $2, $3 }' > ~/.ssh/known_hosts
+          # Pull every "<key-type> <base64-key>" pair out of VPS_KNOWN_HOSTS, ignoring comments,
+          # CRLF, stray text and lines that were joined together when pasted. Then pin the keys to
+          # the alias "vps". With HostKeyAlias they then match whether VPS_HOST is an IP or a domain
+          # name, and whatever SSH port is used.
+          printf '%s\n' "$KNOWN_HOSTS" | tr -d '\r' | awk '{
+            for (i = 1; i < NF; i++)
+              if ($i ~ /^(ssh-(rsa|ed25519|dss)|ecdsa-sha2-nistp(256|384|521)|sk-[a-z0-9@.-]+)$/ &&
+                  $(i + 1) ~ /^AAAA[A-Za-z0-9+\/]+=*$/)
+                print "vps", $i, $(i + 1)
+          }' > ~/.ssh/known_hosts
           if [ ! -s ~/.ssh/known_hosts ]; then
-            echo "VPS_KNOWN_HOSTS contains no host keys (expected output of ssh-keyscan)" >&2
+            echo "VPS_KNOWN_HOSTS contains no host keys (expected the output of ssh-keyscan)." >&2
+            echo "The secret has $(printf '%s' "$KNOWN_HOSTS" | wc -l) newline(s) and $(printf '%s' "$KNOWN_HOSTS" | wc -c) byte(s)." >&2
             exit 1
           fi
           echo "Pinned host key fingerprints:"
