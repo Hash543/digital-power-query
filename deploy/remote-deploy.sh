@@ -32,12 +32,20 @@ echo "==> Unpacking into $RELEASE"
 mkdir -p "$RELEASE"
 tar -xzf "$TARBALL" -C "$RELEASE"
 
-PREVIOUS="$(readlink -f "$APP_DIR/current" 2>/dev/null || true)"
+PREVIOUS=""
+[ -L "$APP_DIR/current" ] && PREVIOUS="$(readlink -f "$APP_DIR/current")"
 
 switch_to() {
   ln -sfn "$1" "$APP_DIR/current.tmp"
   mv -Tf "$APP_DIR/current.tmp" "$APP_DIR/current"
   sudo -n systemctl restart "$SERVICE"
+}
+
+# A unit that is missing or a restart that fails must still roll back, so this runs with
+# set -e suspended (it is called from an `if`).
+deploy_ok() {
+  switch_to "$1" || return 1
+  healthy
 }
 
 healthy() {
@@ -51,16 +59,17 @@ healthy() {
 }
 
 echo "==> Switching current → $RELEASE and restarting $SERVICE"
-switch_to "$RELEASE"
-
-if healthy; then
+if deploy_ok "$RELEASE"; then
   echo "==> Healthy: serving $SHA"
 else
-  echo "!! Health check failed for $SHA" >&2
+  echo "!! Deploy failed for $SHA (restart or health check)" >&2
   sudo -n systemctl status "$SERVICE" --no-pager -l | tail -20 >&2 || true
   if [ -n "$PREVIOUS" ] && [ -d "$PREVIOUS" ]; then
     echo "!! Rolling back to $PREVIOUS" >&2
-    switch_to "$PREVIOUS"
+    switch_to "$PREVIOUS" || echo "!! Restart after rollback failed too" >&2
+  else
+    echo "!! No previous release to roll back to" >&2
+    rm -f "$APP_DIR/current"
   fi
   rm -rf "$RELEASE" "$TARBALL"
   exit 1
