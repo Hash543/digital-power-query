@@ -5,6 +5,7 @@
 # Usage: remote-deploy.sh <commit-sha>
 # Expects the tarball at $APP_DIR/incoming/app-<sha>.tar.gz
 set -euo pipefail
+trap 'echo "!! remote-deploy.sh failed at line $LINENO: $BASH_COMMAND" >&2' ERR
 
 SHA="${1:?usage: remote-deploy.sh <commit-sha>}"
 APP_DIR="${APP_DIR:-/opt/digital-power-query}"
@@ -32,8 +33,13 @@ echo "==> Unpacking into $RELEASE"
 mkdir -p "$RELEASE"
 tar -xzf "$TARBALL" -C "$RELEASE"
 
-PREVIOUS=""
-[ -L "$APP_DIR/current" ] && PREVIOUS="$(readlink -f "$APP_DIR/current")"
+# Only a `current` that resolves to an existing release counts as the previous release.
+# A missing, dangling or looping symlink (left by an earlier failed deploy) does not.
+PREVIOUS="$(readlink -f "$APP_DIR/current" 2>/dev/null || true)"
+case "$PREVIOUS" in
+  "$APP_DIR"/releases/?*) [ -d "$PREVIOUS" ] || PREVIOUS="" ;;
+  *) PREVIOUS="" ;;
+esac
 
 switch_to() {
   ln -sfn "$1" "$APP_DIR/current.tmp"
