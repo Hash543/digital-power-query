@@ -19,8 +19,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <LangSync />
         <Nav />
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</main>
-        <footer className="border-t border-line py-4 text-center text-xs text-muted">
-          Digital Power Query · API: <code>/api/terms</code>, <code>/api/calc/&#123;pmbus|qformat|resolution|compensator&#125;</code>
+        <footer className="break-words border-t border-line px-4 py-4 text-center text-xs text-muted [overflow-wrap:anywhere]">
+          Digital Power Query · API: <code>/api/terms</code>, <code>/api/calc/&#123;pmbus|qformat|resolution|compensator|topology&#125;</code>
         </footer>
       </body>
     </html>

@@ -967,5 +967,399 @@
       "avsbus",
       "digitally-controlled"
     ]
+  },
+  {
+    "category": "architecture",
+    "archGroup": "topology",
+    "id": "boost-pfc",
+    "term": "Boost PFC (CCM)",
+    "zhTerm": "升壓型功率因數修正（CCM）",
+    "en": "A diode bridge followed by a boost converter that shapes the input current into a sine wave in phase with the line voltage, while regulating a ~380–400 V DC bus for the next stage. Above about 75 W, mains-powered supplies need PFC to meet IEC 61000-3-2 harmonic limits. Average current mode control in CCM is the classic choice at hundreds of watts and above; interleaving two or three phases cuts input ripple.",
+    "zh": "二極體整流橋後接一級升壓轉換器，把輸入電流整形成與市電電壓同相位的正弦波，同時把直流匯流排穩定在約 380–400 V 供下一級使用。市電輸入、功率超過約 75 W 的電源需要 PFC 才能符合 IEC 61000-3-2 諧波限制。數百瓦以上最常用 CCM 平均電流模式控制；兩相或三相交錯（interleave）可降低輸入漣波。",
+    "formula": "PF = P / (V_rms · I_rms);  V_bus / V_in = 1 / (1 − D)",
+    "calc": "/calc/topology#boost-pfc",
+    "digital": {
+      "en": "The MCU runs a fast inner current loop and a slow outer bus-voltage loop, plus input-voltage feedforward, phase shedding at light load, brown-in/out and inrush control in firmware.",
+      "zh": "MCU 執行快速的內層電流迴路與慢速的外層匯流排電壓迴路，並以韌體實作輸入電壓前饋、輕載相位卸載（phase shedding）、欠壓保護與湧浪電流控制。"
+    },
+    "pros": {
+      "en": [
+        "Mature, well understood",
+        "Ground-referenced switch, easy to drive",
+        "Interleaving scales power and lowers ripple"
+      ],
+      "zh": [
+        "技術成熟、資料豐富",
+        "開關以地為參考，驅動簡單",
+        "交錯並聯可擴充功率並降低漣波"
+      ]
+    },
+    "cons": {
+      "en": [
+        "Bridge diodes conduct all the time (~1–2% loss)",
+        "Bulky boost inductor and bulk capacitor",
+        "Output bus is always above the line peak"
+      ],
+      "zh": [
+        "整流二極體持續導通，損失約 1–2%",
+        "升壓電感與大電容體積大",
+        "輸出匯流排電壓必須高於市電峰值"
+      ]
+    },
+    "related": [
+      "totem-pole-pfc",
+      "llc",
+      "ccm-dcm"
+    ],
+    "sources": [
+      {
+        "title": "Infineon – PFC CCM boost converter design guide",
+        "url": "https://www.infineon.com/assets/row/public/documents/24/42/infineon-applicationnote-pfcccmboostconverterdesignguide-applicationnotes-en.pdf"
+      },
+      {
+        "title": "NXP AN5257 – Interleaved PFC control theory",
+        "url": "https://NXP.com/docs/en/application-note/AN5257.pdf"
+      },
+      {
+        "title": "ST AN5235 – 3 kW interleaved PFC with digital controller",
+        "url": "https://www.st.com/resource/en/application_note/an5235-stevalipfc01v1-3-kw-three-channel-interleaved-pfc-with-stnrgpf01-digital-controller-stmicroelectronics.pdf"
+      }
+    ]
+  },
+  {
+    "category": "architecture",
+    "archGroup": "topology",
+    "id": "totem-pole-pfc",
+    "term": "Totem-pole Bridgeless PFC",
+    "zhTerm": "圖騰柱無橋 PFC",
+    "en": "A bridgeless PFC that removes the diode bridge: one half-bridge leg of GaN or SiC FETs switches at high frequency, and a second leg (FETs or diodes) commutates at the line frequency. CCM operation needs switches without reverse recovery, which is why it took off with wide-bandgap devices. It reaches about 99% efficiency and is common in titanium-rated server and telecom supplies.",
+    "zh": "拿掉整流二極體橋的無橋 PFC：一個半橋臂用 GaN 或 SiC 以高頻切換，另一個臂（MOSFET 或二極體）以市電頻率換向。CCM 操作要求開關沒有反向恢復，因此是隨著寬能隙元件才普及。效率可達約 99%，常見於 Titanium 等級的伺服器與通訊電源。",
+    "formula": "Fast leg: V_bus / |v_ac| = 1 / (1 − D);  slow leg flips at each zero crossing",
+    "calc": "/calc/topology#boost-pfc",
+    "digital": {
+      "en": "Practically requires digital control: the fast leg's roles (boost switch vs. sync rectifier) swap every half cycle, and the controller must soft-start the duty cycle around the AC zero crossing to avoid current spikes. CCM, CrM/TCM and multimode schemes are all done in firmware.",
+      "zh": "實務上幾乎一定要數位控制：快速臂的角色（升壓開關或同步整流）每半個週期互換，控制器必須在交流過零點附近緩啟動占空比，避免電流尖峰。CCM、CrM/TCM 以及多模式控制都在韌體中實作。"
+    },
+    "pros": {
+      "en": [
+        "No bridge-diode loss, ~99% efficiency",
+        "Fewest power semiconductors of the bridgeless PFCs",
+        "Bidirectional with active slow leg (V2G, battery storage)"
+      ],
+      "zh": [
+        "沒有整流橋損失，效率約 99%",
+        "在無橋 PFC 中功率元件最少",
+        "慢速臂用主動開關即可雙向（V2G、儲能）"
+      ]
+    },
+    "cons": {
+      "en": [
+        "Needs GaN/SiC for CCM",
+        "Current spikes at zero crossing need careful control",
+        "Isolated current and voltage sensing"
+      ],
+      "zh": [
+        "CCM 需要 GaN/SiC",
+        "過零點電流尖峰需仔細控制",
+        "電流與電壓需隔離取樣"
+      ]
+    },
+    "related": [
+      "boost-pfc",
+      "dsc-based",
+      "dab"
+    ],
+    "sources": [
+      {
+        "title": "TI TIDUF22 – 4 kW CCM totem-pole PFC with GaN and C2000",
+        "url": "https://www.ti.com/lit/pdf/tiduf22"
+      },
+      {
+        "title": "TI SPRADQ1 – TCM totem-pole PFC control with C2000 and GaN",
+        "url": "https://ti.com/document-viewer/lit/html/SPRADQ1"
+      },
+      {
+        "title": "TI TIDT257 – 3 kW GaN CCM totem-pole PFC test report",
+        "url": "https://ti.com/lit/pdf/tidt257"
+      }
+    ]
+  },
+  {
+    "category": "architecture",
+    "archGroup": "topology",
+    "id": "llc",
+    "term": "LLC Resonant Converter",
+    "zhTerm": "LLC 諧振轉換器",
+    "en": "An isolated DC-DC converter whose half or full bridge drives a series resonant tank (Lr, Cr) plus the transformer magnetizing inductance Lm. The bridge runs at ~50% duty and the output is regulated by changing the switching frequency. Near the resonant frequency the primary switches turn on at zero voltage and the rectifiers turn off at zero current, so it is the usual second stage after a PFC in server, TV and adapter supplies.",
+    "zh": "隔離式 DC-DC 轉換器，半橋或全橋驅動串聯諧振槽（Lr、Cr）加上變壓器激磁電感 Lm。橋臂以約 50% 占空比工作，靠改變切換頻率來穩壓。在諧振頻率附近，一次側開關零電壓導通、整流器零電流關斷，因此是伺服器、電視與變壓器電源中 PFC 後級的常見選擇。",
+    "formula": "f_r = 1 / (2π√(L_r·C_r));  at f_sw = f_r: V_out = (V_in / 2) / n  (half bridge, n = N_p/N_s)",
+    "calc": "/calc/topology#llc",
+    "digital": {
+      "en": "Digital control handles frequency modulation with clamps, burst mode at light load, synchronous-rectifier timing, soft start, and hybrid or charge control. A high-resolution period (not just duty) is needed because gain changes steeply with frequency.",
+      "zh": "數位控制負責帶上下限的頻率調變、輕載突衝模式（burst mode）、同步整流時序、軟啟動，以及混合式或電荷控制。由於增益隨頻率變化很陡，需要高解析度的週期（不只是占空比）控制。"
+    },
+    "pros": {
+      "en": [
+        "ZVS on primary, ZCS on rectifiers",
+        "Very high efficiency at the nominal point",
+        "Magnetics can be integrated into one transformer"
+      ],
+      "zh": [
+        "一次側 ZVS、整流側 ZCS",
+        "額定工作點效率極高",
+        "磁性元件可整合進單一變壓器"
+      ]
+    },
+    "cons": {
+      "en": [
+        "Narrow input range for good efficiency",
+        "Variable frequency complicates EMI and loop design",
+        "Light-load regulation needs burst mode"
+      ],
+      "zh": [
+        "高效率的輸入範圍窄",
+        "變頻使 EMI 與迴路設計更複雜",
+        "輕載穩壓需要 burst mode"
+      ]
+    },
+    "related": [
+      "boost-pfc",
+      "bus-converter",
+      "psfb",
+      "hrpwm"
+    ],
+    "sources": [
+      {
+        "title": "Infineon – Design of a 600 W HB LLC converter using CoolMOS P6",
+        "url": "https://www.infineon.com/assets/row/public/documents/24/42/infineon-application-note-design-of-a-600-w-hb-llc-converter-using-coolmos-p6-applicationnotes-en.pdf"
+      },
+      {
+        "title": "TI SLUP263 – Designing an LLC resonant half-bridge power converter",
+        "url": "https://e2e.ti.com/cfs-file/__key/communityserver-discussions-components-files/1024/slup263.pdf"
+      },
+      {
+        "title": "TI SSZTCH0 – LLC design: gain charts and frequency range",
+        "url": "https://www.ti.com/lit/pdf/ssztch0"
+      }
+    ]
+  },
+  {
+    "category": "architecture",
+    "archGroup": "topology",
+    "id": "acf",
+    "term": "Active Clamp Flyback (ACF)",
+    "zhTerm": "主動箝位返馳式（ACF）",
+    "en": "A flyback whose leakage-inductance energy goes into a clamp capacitor through an extra high-side switch instead of being burned in an RCD snubber. Running the clamp switch also lets the magnetizing current go negative, discharging the main switch's capacitance so it turns on at zero voltage. Paired with GaN it is the standard topology for small, high-density USB-PD adapters around 30–150 W.",
+    "zh": "在返馳式中加一顆高側開關，把漏感能量送進箝位電容，而不是消耗在 RCD 緩衝電路上。操作箝位開關還能讓激磁電流反向，在主開關導通前把它的寄生電容放電，達成零電壓切換。搭配 GaN 是約 30–150 W 高功率密度 USB-PD 變壓器的標準拓樸。",
+    "formula": "V_out / V_in = D / (n·(1 − D)),  n = N_p/N_s",
+    "calc": "/calc/topology#acf",
+    "digital": {
+      "en": "The controller adapts the clamp-switch on-time and dead time cycle by cycle to hit ZVS across line and load, and moves between modes (transition mode, burst) as load drops. Dedicated ACF controllers do this in a hardware state machine.",
+      "zh": "控制器逐週期調整箝位開關導通時間與死區時間，在不同輸入電壓與負載下都達成 ZVS，並隨負載降低切換工作模式（transition mode、burst）。專用 ACF 控制器以硬體狀態機完成這些工作。"
+    },
+    "pros": {
+      "en": [
+        "Recycles leakage energy, no snubber loss",
+        "ZVS allows high frequency and small magnetics",
+        "Low parts count for an isolated converter"
+      ],
+      "zh": [
+        "回收漏感能量，沒有緩衝電路損失",
+        "ZVS 允許高頻與小型磁性元件",
+        "以隔離式轉換器而言零件數少"
+      ]
+    },
+    "cons": {
+      "en": [
+        "Extra high-side switch and driver",
+        "ZVS tuning is load and line dependent",
+        "Practical limit around 150 W"
+      ],
+      "zh": [
+        "多一顆高側開關與驅動",
+        "ZVS 調校隨負載與輸入電壓變化",
+        "實用上限約 150 W"
+      ]
+    },
+    "related": [
+      "llc",
+      "state-machine-controller"
+    ],
+    "sources": [
+      {
+        "title": "TI SLUAAG2 – UCC28782 ACF practical design guidelines",
+        "url": "https://ti.com/lit/pdf/sluaag2"
+      },
+      {
+        "title": "TI SLUA871 – Increasing power density with the ACF controller UCC28780",
+        "url": "https://edgeworker.ti.com/lit/pdf/slua871"
+      }
+    ]
+  },
+  {
+    "category": "architecture",
+    "archGroup": "topology",
+    "id": "four-switch-buck-boost",
+    "term": "Four-Switch Buck-Boost (4SBB)",
+    "zhTerm": "四開關升降壓",
+    "en": "A non-inverting converter with one inductor between a buck half-bridge (input side) and a boost half-bridge (output side). It can step up or down, so the output stays regulated whether the input is above, below or equal to it. Used for USB-PD sources, automotive rails that see cold crank and load dump, battery chargers, and solar optimizers.",
+    "zh": "非反相轉換器，以一顆電感連接輸入側的降壓半橋與輸出側的升壓半橋。可升壓也可降壓，不論輸入電壓高於、低於或等於輸出都能穩壓。用於 USB-PD 供電端、需承受冷啟動與拋負載的車用電源軌、電池充電器與太陽能優化器。",
+    "formula": "Buck: V_out = D₁·V_in;  Boost: V_out = V_in / (1 − D₂);  Buck-boost: V_out / V_in = D₁ / (1 − D₂)",
+    "calc": "/calc/topology#four-switch-buck-boost",
+    "digital": {
+      "en": "The hard part is the transition region where V_in ≈ V_out. Digital controllers choose the mode (buck, boost, or all four switches active), add hysteresis between modes, and blend the duty cycles so the output stays smooth. They can also run it bidirectionally.",
+      "zh": "難點在 V_in ≈ V_out 的過渡區。數位控制器決定工作模式（降壓、升壓或四開關同時切換），在模式之間加入遲滯，並平滑地銜接占空比讓輸出不跳動，也可以做雙向操作。"
+    },
+    "pros": {
+      "en": [
+        "Wide input range above and below V_out",
+        "Single inductor, non-inverting",
+        "Synchronous, so it can be bidirectional"
+      ],
+      "zh": [
+        "輸入範圍可涵蓋高於與低於 V_out",
+        "單電感、非反相輸出",
+        "全同步，可雙向操作"
+      ]
+    },
+    "cons": {
+      "en": [
+        "Four switches and drivers",
+        "Mode transitions need careful control",
+        "Higher inductor RMS current in buck-boost mode"
+      ],
+      "zh": [
+        "需要四顆開關與驅動",
+        "模式切換需仔細控制",
+        "升降壓模式下電感 RMS 電流較大"
+      ]
+    },
+    "related": [
+      "buck-duty",
+      "digitally-controlled",
+      "pol"
+    ],
+    "sources": [
+      {
+        "title": "TI SLYT765 – Multimode control for a four-switch buck-boost converter",
+        "url": "https://ti.com/lit/pdf/slyt765"
+      },
+      {
+        "title": "TI TIDT262 – >300 W automotive four-switch buck-boost test report",
+        "url": "https://ti.com/lit/pdf/tidt262"
+      }
+    ]
+  },
+  {
+    "category": "architecture",
+    "archGroup": "topology",
+    "id": "psfb",
+    "term": "Phase-Shifted Full Bridge (PSFB)",
+    "zhTerm": "相移全橋",
+    "en": "An isolated full-bridge converter in which both legs run at ~50% duty and the output is set by the phase shift between them. The transformer leakage (plus an optional resonant inductor) lets the switches turn on at zero voltage. A long-standing choice for 500 W–5 kW telecom, server and EV auxiliary supplies with wide input ranges.",
+    "zh": "隔離式全橋轉換器，兩個橋臂都以約 50% 占空比工作，以兩臂之間的相移決定輸出。利用變壓器漏感（可加諧振電感）讓開關零電壓導通。長期以來是 500 W–5 kW、寬輸入範圍的通訊、伺服器與電動車輔助電源的常用拓樸。",
+    "formula": "V_out ≈ D_eff · V_in / n,  D_eff = phase shift / 180°",
+    "calc": "/calc/topology#psfb",
+    "digital": {
+      "en": "Digital controllers make the dead time adaptive per leg so ZVS holds at light load, run peak current mode with slope compensation, and drive synchronous rectifiers. Phase-shift resolution is just as important as PWM resolution.",
+      "zh": "數位控制器讓每個橋臂的死區時間自適應，使輕載仍維持 ZVS，並實作帶斜率補償的峰值電流模式與同步整流驅動。相移解析度和 PWM 解析度一樣重要。"
+    },
+    "pros": {
+      "en": [
+        "ZVS with fixed frequency",
+        "Handles wide input range",
+        "Well-proven at kW level"
+      ],
+      "zh": [
+        "固定頻率即可 ZVS",
+        "可應付寬輸入範圍",
+        "千瓦級應用經驗豐富"
+      ]
+    },
+    "cons": {
+      "en": [
+        "Loses ZVS on the lagging leg at light load",
+        "Duty-cycle loss and secondary ringing",
+        "Circulating current lowers efficiency vs. LLC"
+      ],
+      "zh": [
+        "輕載時落後臂失去 ZVS",
+        "占空比損失與二次側振鈴",
+        "環流使效率不如 LLC"
+      ]
+    },
+    "related": [
+      "llc",
+      "dab",
+      "hrpwm"
+    ],
+    "sources": [
+      {
+        "title": "Analog Devices AN-1336 – Adaptive dead time in phase-shifted full bridge (ADP1055)",
+        "url": "https://www.analog.com/en/resources/app-notes/an-1336.html"
+      },
+      {
+        "title": "TI SPRABR1 – Digitally controlled PSFB with C2000",
+        "url": "https://ti.com/lit/sprabr1"
+      },
+      {
+        "title": "TI SLUA107 – PSFB zero-voltage transition design considerations",
+        "url": "https://ti.com/lit/SLUA107"
+      }
+    ]
+  },
+  {
+    "category": "architecture",
+    "archGroup": "topology",
+    "id": "dab",
+    "term": "Dual Active Bridge (DAB)",
+    "zhTerm": "雙主動橋",
+    "en": "Two active full bridges, one on each side of a transformer, linked by a series inductance. Both bridges run at 50% duty, and power flows from the leading bridge to the lagging one, set by the phase shift φ between them. It is naturally bidirectional with soft switching, so it is used in EV on-board and DC fast chargers, battery storage and solid-state transformers.",
+    "zh": "變壓器兩側各一個主動全橋，以串聯電感連接。兩個橋都以 50% 占空比工作，功率由相位超前的一側流向落後的一側，大小由兩橋之間的相移 φ 決定。天生雙向且具軟切換，用於電動車車載與直流快充、儲能系統與固態變壓器。",
+    "formula": "P = n·V₁·V₂·φ·(π − |φ|) / (2π²·f_s·L)   (single phase shift, φ in rad)",
+    "calc": "/calc/topology#dab",
+    "digital": {
+      "en": "Control is almost always digital: the MCU computes the phase shift (single, extended, dual or triple phase shift) to regulate current or voltage in both directions and to keep ZVS and low circulating current as the voltage ratio changes.",
+      "zh": "幾乎都是數位控制：MCU 計算相移量（單相移、擴展相移、雙相移或三相移），在兩個方向上調節電流或電壓，並在電壓比變化時維持 ZVS 與低環流。"
+    },
+    "pros": {
+      "en": [
+        "Inherently bidirectional",
+        "Soft switching on both bridges",
+        "Symmetric structure, high power density"
+      ],
+      "zh": [
+        "天生雙向",
+        "兩側橋臂皆可軟切換",
+        "結構對稱、功率密度高"
+      ]
+    },
+    "cons": {
+      "en": [
+        "Loses ZVS when the voltage ratio mismatches",
+        "High circulating current at light load",
+        "Eight switches plus advanced modulation"
+      ],
+      "zh": [
+        "電壓比不匹配時失去 ZVS",
+        "輕載時環流大",
+        "八顆開關並需要進階調變"
+      ]
+    },
+    "related": [
+      "psfb",
+      "totem-pole-pfc",
+      "dsc-based"
+    ],
+    "sources": [
+      {
+        "title": "TI TIDA-010054 – Bidirectional single-phase DAB reference design",
+        "url": "https://www.ti.com/jp/lit/pdf/tidues0"
+      },
+      {
+        "title": "MathWorks – Dual active bridge converter model",
+        "url": "https://it.mathworks.com/help/sps/ug/power-converters-dab-1ph.html"
+      }
+    ]
   }
 ]

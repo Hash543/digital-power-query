@@ -25,6 +25,15 @@ export function TermDetail({ term: t }: { term: Term }) {
         <div className="rounded-md bg-panel px-4 py-3 font-mono text-sm">{t.formula}</div>
       )}
 
+      {t.digital && (
+        <div className="rounded-md border border-amber-500/40 bg-amber-500/5 px-4 py-3 text-sm">
+          <h2 className="mb-1 font-semibold">
+            <T en="Role of digital control" zh="數位控制的角色" />
+          </h2>
+          <p className="leading-relaxed text-muted">{t.digital[lang]}</p>
+        </div>
+      )}
+
       {(t.pros || t.cons) && (
         <div className="grid gap-4 text-sm sm:grid-cols-2">
           {[

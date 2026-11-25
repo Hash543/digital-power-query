@@ -9,8 +9,8 @@ import { TextInput } from "@/components/ui";
 const tools = [
   {
     href: "/architectures",
-    en: ["Power architectures", "CPA, DPA, IBA, FPA, 48 V direct; digitally managed vs. controlled, DSC, state-machine and FPGA control."],
-    zh: ["電源架構介紹", "CPA、DPA、IBA、FPA、48 V 直轉；數位管理與數位控制、DSC、狀態機與 FPGA 控制。"],
+    en: ["Topologies & architectures", "PFC, totem-pole, LLC, ACF, 4-switch buck-boost, PSFB, DAB; CPA, DPA, IBA, FPA, 48 V direct; digitally managed vs. controlled, DSC, state-machine and FPGA control."],
+    zh: ["拓樸與架構介紹", "PFC、圖騰柱、LLC、ACF、四開關升降壓、PSFB、DAB；CPA、DPA、IBA、FPA、48 V 直轉；數位管理與數位控制、DSC、狀態機與 FPGA 控制。"],
   },
   {
     href: "/calc/pmbus",
@@ -26,6 +26,11 @@ const tools = [
     href: "/calc/resolution",
     en: ["PWM & ADC resolution", "DPWM/HRPWM bits, ADC LSB, Vout step and limit-cycle check."],
     zh: ["PWM 與 ADC 解析度", "DPWM／HRPWM 位元數、ADC LSB、Vout 步階與極限環檢查。"],
+  },
+  {
+    href: "/calc/topology",
+    en: ["Topology duty & PWM", "Duty cycle, frequency or phase shift for PFC, LLC, ACF, 4-switch buck-boost, PSFB and DAB, with PWM period and compare counts."],
+    zh: ["拓樸占空比與 PWM", "計算 PFC、LLC、ACF、四開關升降壓、PSFB、DAB 的占空比、頻率或相移，以及 PWM 週期與比較值。"],
   },
   {
     href: "/calc/compensator",

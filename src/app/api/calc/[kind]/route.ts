@@ -1,6 +1,7 @@
 import * as pm from "@/lib/calc/pmbus";
 import { fromQHex, toQ } from "@/lib/calc/qformat";
 import { adcResolution, limitCycleCheck, pwmResolution } from "@/lib/calc/resolution";
+import * as topo from "@/lib/calc/topology";
 import { bodeDiscrete, fromPid, fromPoleZero, logspace, tustin } from "@/lib/calc/compensator";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -58,6 +59,24 @@ const handlers: Record<string, Handler> = {
     const adc = adcResolution({ bits: num(b.adcBits, "adcBits"), vref: num(b.vref, "vref"), gain: num(b.gain, "gain") });
     return { pwm, adc, limitCycle: limitCycleCheck(pwm, adc) };
   },
+  // { topology: "pfc"|"llc"|"acf"|"4sbb"|"psfb"|"dab", fclk, ...inputs of that topology }
+  //   pfc: vacRms, vbus, fsw, pout?, eff?, countMode?   llc: vin, vout, n, lr, cr, lm, pout, bridge, vf?, deadTime?
+  //   acf: vin, vout, n, vf?, fsw, deadTime?   4sbb: vin, vout, fsw, band?   psfb: vin, vout, n, vf?, fsw
+  //   dab: v1, v2, n, fsw, l, p
+  topology(b) {
+    const o = (k: string) => (b[k] === undefined ? undefined : num(b[k], k));
+    const r = (k: string) => num(b[k], k);
+    const fclk = r("fclk");
+    switch (b.topology) {
+      case "pfc": return topo.pfc({ vacRms: r("vacRms"), vbus: r("vbus"), fsw: r("fsw"), fclk, pout: o("pout"), eff: o("eff"), countMode: b.countMode === "updown" ? "updown" : "up" });
+      case "llc": return topo.llc({ vin: r("vin"), vout: r("vout"), n: r("n"), lr: r("lr"), cr: r("cr"), lm: r("lm"), pout: r("pout"), bridge: b.bridge === "full" ? "full" : "half", vf: o("vf"), fclk, deadTime: o("deadTime") });
+      case "acf": return topo.acf({ vin: r("vin"), vout: r("vout"), n: r("n"), vf: o("vf"), fsw: r("fsw"), fclk, deadTime: o("deadTime") });
+      case "4sbb": return topo.fourSwitchBuckBoost({ vin: r("vin"), vout: r("vout"), fsw: r("fsw"), fclk, band: o("band") });
+      case "psfb": return topo.psfb({ vin: r("vin"), vout: r("vout"), n: r("n"), vf: o("vf"), fsw: r("fsw"), fclk });
+      case "dab": return topo.dab({ v1: r("v1"), v2: r("v2"), n: r("n"), fsw: r("fsw"), l: r("l"), p: r("p"), fclk });
+      default: throw new Error(`Unknown topology "${b.topology}" (pfc, llc, acf, 4sbb, psfb, dab)`);
+    }
+  },
   // { fs, prewarp?, pid: {kp,ki,kd,fdHz} } or { fs, prewarp?, gain, zerosHz: [], polesHz: [] }
   compensator(b) {
     const fs = num(b.fs, "fs");
@@ -75,7 +94,7 @@ const handlers: Record<string, Handler> = {
   },
 };
 
-// POST /api/calc/{pmbus|qformat|resolution|compensator}
+// POST /api/calc/{pmbus|qformat|resolution|compensator|topology}
 export async function POST(req: Request, ctx: RouteContext<"/api/calc/[kind]">) {
   const { kind } = await ctx.params;
   const handler = handlers[kind];

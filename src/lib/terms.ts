@@ -2,6 +2,8 @@ import data from "@/data/terms.json";
 
 export type Category = "pmbus" | "number" | "pwm" | "adc" | "control" | "converter" | "architecture";
 
+export type ArchGroup = "topology" | "system" | "control";
+
 export interface Bilingual<T> {
   en: T;
   zh: T;
@@ -15,7 +17,8 @@ export interface Term {
   en: string;
   zh: string;
   formula?: string;
-  archGroup?: "system" | "control";
+  archGroup?: ArchGroup;
+  digital?: Bilingual<string>;
   pros?: Bilingual<string[]>;
   cons?: Bilingual<string[]>;
   related?: string[];
@@ -35,7 +38,7 @@ export const categories: Record<Category, { en: string; zh: string }> = {
   architecture: { en: "Architecture", zh: "電源架構" },
 };
 
-export const architectures = (group: "system" | "control") =>
+export const architectures = (group: ArchGroup) =>
   terms.filter((t) => t.category === "architecture" && t.archGroup === group);
 
 export const getTerm = (id: string) => terms.find((t) => t.id === id);

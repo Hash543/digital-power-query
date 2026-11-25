@@ -13,6 +13,56 @@ const loads: Stage = [
 ];
 
 const diagrams: Record<string, Stage[]> = {
+  "boost-pfc": [
+    [{ label: "AC line", sub: "85–265 V", tone: "source" }],
+    [{ label: "EMI filter" }],
+    [{ label: "Diode bridge" }],
+    [{ label: "Boost", sub: "L + FET + diode" }, { label: "I-loop + V-loop", tone: "digital" }],
+    [{ label: "~400 V bus", tone: "load" }],
+  ],
+  "totem-pole-pfc": [
+    [{ label: "AC line", tone: "source" }],
+    [{ label: "Boost L" }],
+    [{ label: "Fast leg", sub: "GaN/SiC @ f_sw" }, { label: "Slow leg", sub: "FET @ 50/60 Hz" }],
+    [{ label: "Zero-crossing logic", tone: "digital" }],
+    [{ label: "~400 V bus", tone: "load" }],
+  ],
+  llc: [
+    [{ label: "400 V bus", tone: "source" }],
+    [{ label: "Half / full bridge", sub: "50% duty, f_sw" }],
+    [{ label: "Lr–Cr tank", sub: "+ Lm" }],
+    [{ label: "Transformer", sub: "n : 1" }],
+    [{ label: "SR rectifier" }, { label: "Freq. control", tone: "digital" }],
+    [{ label: "12 / 48 V", tone: "load" }],
+  ],
+  acf: [
+    [{ label: "Rectified AC", tone: "source" }],
+    [{ label: "Main switch", sub: "low side" }, { label: "Clamp switch + C", sub: "high side" }],
+    [{ label: "Flyback xfmr", sub: "Lm stores energy" }],
+    [{ label: "SR" }, { label: "ZVS timing", tone: "digital" }],
+    [{ label: "5–20 V USB-PD", tone: "load" }],
+  ],
+  "four-switch-buck-boost": [
+    [{ label: "V_in", sub: "above or below V_out", tone: "source" }],
+    [{ label: "Buck leg", sub: "Q1 / Q2" }],
+    [{ label: "Inductor" }],
+    [{ label: "Boost leg", sub: "Q3 / Q4" }, { label: "Mode select", sub: "buck / BB / boost", tone: "digital" }],
+    [{ label: "V_out", tone: "load" }],
+  ],
+  psfb: [
+    [{ label: "400 V bus", tone: "source" }],
+    [{ label: "Full bridge", sub: "leading + lagging leg" }, { label: "Phase shift", tone: "digital" }],
+    [{ label: "Lr + transformer" }],
+    [{ label: "Rectifier + LC filter" }],
+    [{ label: "12 / 48 V", tone: "load" }],
+  ],
+  dab: [
+    [{ label: "DC bus 1", tone: "source" }],
+    [{ label: "Bridge 1", sub: "50% duty" }],
+    [{ label: "L + transformer", sub: "n : 1" }, { label: "Phase shift φ", tone: "digital" }],
+    [{ label: "Bridge 2", sub: "50% duty" }],
+    [{ label: "DC bus 2 / battery", tone: "load" }],
+  ],
   "centralized-power": [
     [{ label: "AC / 48 V", tone: "source" }],
     [{ label: "Central PSU", sub: "all rails" }],
@@ -112,15 +162,30 @@ function ArchCard({ t }: { t: Term }) {
         <h3 className="font-semibold">
           {t.term} <span className="font-normal text-muted">· {t.zhTerm}</span>
         </h3>
-        <Link href={`/terms/${t.id}`} className="text-xs text-accent">
-          <T en="Details & sources →" zh="詳細與來源 →" />
-        </Link>
+        <span className="flex gap-3 text-xs">
+          {t.calc && (
+            <Link href={t.calc} className="text-accent">
+              <T en="Duty & PWM calc →" zh="占空比與 PWM 計算 →" />
+            </Link>
+          )}
+          <Link href={`/terms/${t.id}`} className="text-accent">
+            <T en="Details & sources →" zh="詳細與來源 →" />
+          </Link>
+        </span>
       </div>
       <p className="mt-2 text-sm leading-relaxed">{t[lang]}</p>
       {d && (
         <div className="mt-3 rounded-md bg-background p-3">
           <Flow stages={d} label={`${t.term} block diagram`} />
         </div>
+      )}
+      {t.digital && (
+        <p className="mt-3 border-l-2 border-amber-500/60 pl-3 text-sm leading-relaxed text-muted">
+          <span className="font-semibold text-foreground">
+            <T en="Digital control: " zh="數位控制：" />
+          </span>
+          {t.digital[lang]}
+        </p>
       )}
       {(t.pros || t.cons) && (
         <div className="mt-3 grid gap-3 text-sm sm:grid-cols-2">
@@ -157,6 +222,11 @@ function ArchCard({ t }: { t: Term }) {
 export default function ArchitecturesPage() {
   const groups = [
     {
+      key: "topology" as const,
+      en: ["Converter topologies", "The power stage itself: how switches, magnetics and capacitors are arranged. These are the topologies digital controllers most often run, from PFC front ends to isolated and bidirectional DC-DC stages."],
+      zh: ["轉換器拓樸", "功率級本身：開關、磁性元件與電容如何排列。以下是數位控制器最常控制的拓樸，從 PFC 前級到隔離式與雙向 DC-DC 級。"],
+    },
+    {
       key: "system" as const,
       en: ["Power-delivery architectures", "How power gets from the input bus to the load: how many conversion stages, where isolation happens, which bus voltage is distributed."],
       zh: ["電源配送架構", "電力如何從輸入匯流排送到負載：經過幾級轉換、在哪裡隔離、配送什麼電壓的匯流排。"],
@@ -174,8 +244,8 @@ export default function ArchitecturesPage() {
         title={<T en="Digital power architectures" zh="數位電源架構介紹" />}
         intro={
           <T
-            en="An overview of common power-delivery and digital-control architectures, with block diagrams and trade-offs. Vendor efficiency figures vary; check current datasheets and standards before relying on them."
-            zh="常見電源配送架構與數位控制架構的概覽，附方塊圖與優缺點比較。各廠商的效率數據不盡相同，引用前請查閱最新的規格書與標準。"
+            en="An overview of common converter topologies (PFC, LLC, ACF, four-switch buck-boost and more), power-delivery architectures and digital-control architectures, with block diagrams and trade-offs. Vendor efficiency figures vary; check current datasheets and standards before relying on them."
+            zh="常見轉換器拓樸（PFC、LLC、ACF、四開關升降壓等）、電源配送架構與數位控制架構的概覽，附方塊圖與優缺點比較。各廠商的效率數據不盡相同，引用前請查閱最新的規格書與標準。"
           />
         }
       />

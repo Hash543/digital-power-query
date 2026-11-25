@@ -8,6 +8,7 @@ export const calcLinks = [
   { href: "/calc/pmbus", en: "PMBus formats", zh: "PMBus 格式" },
   { href: "/calc/qformat", en: "Q format", zh: "Q 格式" },
   { href: "/calc/resolution", en: "PWM & ADC", zh: "PWM 與 ADC" },
+  { href: "/calc/topology", en: "Topology duty", zh: "拓樸占空比" },
   { href: "/calc/compensator", en: "Compensator", zh: "補償器" },
 ];
 
