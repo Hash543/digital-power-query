@@ -1518,8 +1518,8 @@
     "term": "Trip zone",
     "zhTerm": "Trip Zone 硬體保護",
     "category": "mcu",
-    "en": "A hardware path that forces PWM outputs to a safe state (low, high or high-Z) within tens of nanoseconds when a fault input or comparator event fires, without waiting for software. One-shot trips latch until firmware clears them; cycle-by-cycle trips release at the next period and act as peak-current limiting.",
-    "zh": "當故障輸入或比較器事件發生時，不經軟體、在數十奈秒內把 PWM 輸出強制到安全狀態（低、高或高阻抗）的硬體路徑。One-shot 模式會鎖住直到韌體清除；cycle-by-cycle 模式在下一週期自動釋放，可做逐週期峰值電流限制。",
+    "en": "A hardware path that forces PWM outputs to a safe state (low, high or high-Z) within tens of nanoseconds when a fault input or comparator event fires, without waiting for software. One-shot trips latch until firmware clears them; cycle-by-cycle trips release at the next period and act as peak-current limiting. Microchip dsPIC33 calls the equivalent PWM input logic PCI (PWM Control Input).",
+    "zh": "當故障輸入或比較器事件發生時，不經軟體、在數十奈秒內把 PWM 輸出強制到安全狀態（低、高或高阻抗）的硬體路徑。One-shot 模式會鎖住直到韌體清除；cycle-by-cycle 模式在下一週期自動釋放，可做逐週期峰值電流限制。Microchip dsPIC33 中對應的 PWM 輸入邏輯稱為 PCI（PWM Control Input）。",
     "related": [
       "cmpss",
       "epwm"
@@ -1534,7 +1534,23 @@
     "zh": "內建 DAC 參考電壓的晶片內比較器（TI 稱為 CMPSS），把電流或電壓感測訊號與門檻比較，結果直接送到 PWM 的 Trip 邏輯。用於過電流、過電壓保護，以及峰值電流模式控制，常搭配斜坡產生器做斜率補償。",
     "related": [
       "trip-zone",
-      "epwm"
+      "epwm",
+      "dac"
+    ]
+  },
+  {
+    "id": "dac",
+    "term": "DAC (Digital-to-Analog Converter)",
+    "zhTerm": "數位類比轉換器",
+    "category": "mcu",
+    "en": "Converts a digital code into an analog voltage. In power MCUs it sets comparator thresholds (e.g. inside CMPSS) for over-current protection and peak-current-mode control, generates slope-compensation ramps, and outputs reference or debug signals. Key specs are resolution (LSB size), settling time, INL/DNL, and whether the output is buffered. Without an on-chip DAC, an RC-filtered PWM (\"PWM DAC\") gives a slow, low-cost analog voltage.",
+    "zh": "把數位碼轉換為類比電壓。在電源 MCU 中用來設定比較器門檻（例如 CMPSS 內部），做過電流保護與峰值電流模式控制、產生斜率補償斜坡，以及輸出參考電壓或除錯訊號。主要規格有解析度（LSB 大小）、建立時間（settling time）、INL/DNL，以及輸出是否有緩衝。若晶片沒有 DAC，可用 PWM 加 RC 濾波（PWM DAC）得到速度較慢、成本低的類比電壓。",
+    "formula": "V_out = code · V_ref / 2^N,  LSB = V_ref / 2^N",
+    "related": [
+      "cmpss",
+      "trip-zone",
+      "adc-resolution",
+      "dpwm"
     ]
   },
   {
@@ -1692,6 +1708,395 @@
     "related": [
       "uart",
       "bootloader"
+    ]
+  },
+  {
+    "id": "aliasing",
+    "term": "Aliasing and the Nyquist frequency",
+    "zhTerm": "混疊與奈奎斯特頻率",
+    "category": "control",
+    "en": "A sampled signal cannot represent frequencies above half the sample rate (the Nyquist frequency). Content above it folds back and appears as a false low-frequency signal. In a converter the switching ripple is the main source: if the ADC samples once per switching period, ripple at f_sw aliases to DC, so the sample must sit at a consistent point of the PWM period (e.g. mid on-time) and the feedback path may need an RC anti-alias filter.",
+    "zh": "取樣訊號無法表示高於取樣率一半（奈奎斯特頻率）的成分，超過的部分會折返成假的低頻訊號。轉換器中主要來源是切換漣波：若 ADC 每個開關週期取樣一次，f_sw 的漣波會混疊成直流，因此取樣點必須固定在 PWM 週期中的同一位置（例如導通時間中點），回授路徑也可能需要 RC 抗混疊濾波。",
+    "formula": "f_N = f_s / 2,  f_alias = |f − k·f_s|",
+    "related": [
+      "sample-and-hold",
+      "adc-soc",
+      "zoh"
+    ]
+  },
+  {
+    "id": "sample-and-hold",
+    "term": "Sample-and-hold and ADC conversion time",
+    "zhTerm": "取樣保持與 ADC 轉換時間",
+    "category": "control",
+    "en": "The ADC first charges its sampling capacitor (S&H) through the source impedance, then converts and finally moves the result onto the bus. The total time adds to the loop's delay. A high source impedance needs a longer sampling window or a buffer, otherwise the result is not settled.",
+    "zh": "ADC 先透過訊號源阻抗對取樣電容充電（取樣保持，S&H），接著轉換，最後把結果搬上匯流排。總時間會加入控制迴路的延遲。訊號源阻抗過高時需要加長取樣時間或加緩衝器，否則結果尚未穩定。",
+    "formula": "T_ADC = T_S&H + T_CONV + T_BUS",
+    "related": [
+      "adc-soc",
+      "sampling-delay",
+      "aliasing",
+      "adc-resolution"
+    ]
+  },
+  {
+    "id": "zoh",
+    "term": "Zero-order hold (ZOH) and phase erosion",
+    "zhTerm": "零階保持與相位侵蝕",
+    "category": "control",
+    "en": "A digital controller holds each output value until the next update, which acts as a zero-order hold. Together with sampling and computation delay it adds phase lag that grows linearly with frequency and erodes the phase margin at crossover. The compensator design must budget for it, by moving poles and zeros or by keeping crossover well below the sampling rate.",
+    "zh": "數位控制器把每次輸出保持到下一次更新，相當於零階保持器。它與取樣、運算延遲一起產生隨頻率線性增加的相位落後，侵蝕穿越頻率處的相位邊限。補償器設計必須預留這部分，可調整極零點位置，或讓穿越頻率遠低於取樣頻率。",
+    "formula": "H_ZOH(s) = (1 − e^{−sT})/(sT),  φ_ZOH = −180°·f/f_s,  φ_delay = −360°·f·t_d",
+    "related": [
+      "sampling-delay",
+      "crossover",
+      "loop-gain"
+    ]
+  },
+  {
+    "id": "difference-equation",
+    "term": "Linear difference equation (LDE)",
+    "zhTerm": "線性差分方程式",
+    "category": "control",
+    "en": "The discrete-time form of a filter or compensator that firmware actually runs: each output is a weighted sum of current and past inputs and past outputs. Evaluating it is a convolution of the input with the coefficient set, done in a multiply-accumulate loop on a DSP core.",
+    "zh": "濾波器或補償器在離散時間下的形式，也就是韌體實際執行的運算：每個輸出等於目前與過去輸入、以及過去輸出的加權和。計算過程即輸入與係數組的摺積，在 DSP 核心上以乘積累加（MAC）迴圈完成。",
+    "formula": "y[n] = Σ b_k·x[n−k] − Σ a_k·y[n−k]   (e.g. y[n] = x[n] + 0.5·y[n−1])",
+    "related": [
+      "2p2z",
+      "3p3z",
+      "bilinear",
+      "fixed-point"
+    ]
+  },
+  {
+    "id": "normalization",
+    "term": "Normalization (digital loop scaling)",
+    "zhTerm": "正規化（數位迴路縮放）",
+    "category": "control",
+    "en": "Scaling that maps the controller's internal numbers to physical quantities. The ADC adds a gain of counts per volt and the PWM register a gain of duty per count. Normalizing removes these gains, so coefficients designed in the analog domain still give the intended loop gain, and the output lands directly in the duty, phase or period register.",
+    "zh": "把控制器內部數值對應到實際物理量的縮放。ADC 帶來「計數／伏特」的增益，PWM 暫存器帶來「占空比／計數」的增益。正規化會抵銷這些增益，讓在類比域設計的係數仍得到預期的迴路增益，輸出也能直接寫入占空比、相位或週期暫存器。",
+    "formula": "K_ADC = 2^N / V_ref,  K_PWM = 1 / PER,  K_norm = 1 / (K_ADC · K_PWM)",
+    "related": [
+      "q-format",
+      "fixed-point",
+      "dpwm",
+      "adc-resolution"
+    ]
+  },
+  {
+    "id": "lead-lag",
+    "term": "Lead-lag compensator",
+    "zhTerm": "超前落後補償器",
+    "category": "control",
+    "en": "A compensator that combines a lag part (an integrator plus a pole, for high DC gain) with a lead part (zeros below a pole, for phase boost near crossover). Type II and Type III compensators are lead-lag forms; in digital form they become 2P2Z and 3P3Z difference equations.",
+    "zh": "結合落後部分（積分器加極點，提供高直流增益）與超前部分（零點低於極點，在穿越頻率附近提升相位）的補償器。Type II 與 Type III 都屬於超前落後形式，數位化後即為 2P2Z、3P3Z 差分方程式。",
+    "related": [
+      "type-ii",
+      "type-iii",
+      "2p2z",
+      "3p3z"
+    ]
+  },
+  {
+    "id": "plant-measurement",
+    "term": "Plant measurement",
+    "zhTerm": "受控體（Plant）量測",
+    "category": "control",
+    "en": "Measuring the power stage's frequency response before designing the compensator. The loop is closed with a small proportional gain (Kp only) for stability, a perturbation is injected, and a network analyzer or firmware tool records gain and phase. The measured plant replaces or validates the model.",
+    "zh": "設計補償器之前先量測功率級的頻率響應。以小的比例增益（只用 Kp）閉迴路以維持穩定，注入擾動訊號，再用網路分析儀或韌體工具記錄增益與相位。量測結果可取代或驗證理論模型。",
+    "related": [
+      "loop-gain",
+      "pid",
+      "crossover"
+    ]
+  },
+  {
+    "id": "loop-gain",
+    "term": "Loop gain, phase margin and gain margin",
+    "zhTerm": "開迴路增益與穩定邊限",
+    "category": "control",
+    "en": "The open-loop gain T(s) = G(s)·H(s) is the product of compensator, modulator, power stage and feedback. Phase margin is how far the phase is from −180° where |T| = 1 (crossover). Gain margin is how far |T| is below 1 where the phase reaches −180°. Typical targets are 45–60° and 6–10 dB.",
+    "zh": "開迴路增益 T(s) = G(s)·H(s)，為補償器、調變器、功率級與回授的乘積。相位邊限是 |T| = 1（穿越頻率）時相位距離 −180° 的餘量；增益邊限是相位到達 −180° 時 |T| 低於 1 的程度。一般目標為 45–60° 與 6–10 dB。",
+    "formula": "PM = 180° + ∠T(j2πf_c),  GM = −20·log|T(j2πf_180)|",
+    "related": [
+      "crossover",
+      "zoh",
+      "plant-measurement"
+    ]
+  },
+  {
+    "id": "voltage-mode-control",
+    "term": "Voltage-mode control",
+    "zhTerm": "電壓模式控制",
+    "category": "control",
+    "en": "A single loop that compares the output voltage with a reference and sets the duty (or frequency in an LLC) directly. Simple and noise tolerant, but the LC double pole requires a Type III compensator, and the response to input changes is slower than current-mode control.",
+    "zh": "只有單一迴路：比較輸出電壓與參考值，直接設定占空比（LLC 中則為頻率）。架構簡單、抗雜訊，但 LC 雙極點需要 Type III 補償，對輸入變化的響應也比電流模式慢。",
+    "related": [
+      "type-iii",
+      "lc-double-pole",
+      "peak-current-mode"
+    ]
+  },
+  {
+    "id": "peak-current-mode",
+    "term": "Peak current-mode control",
+    "zhTerm": "峰值電流模式控制",
+    "category": "control",
+    "en": "An inner loop that ends each on-time when the sensed switch or inductor current reaches a threshold set by the outer voltage loop. It gives cycle-by-cycle current limiting and removes the LC double pole. Above 50% duty it needs slope compensation to avoid subharmonic oscillation. In an LLC the same idea ends each half-cycle on resonant current or charge, improving transient response. In an MCU it is built from an analog comparator, a DAC threshold and PWM fault logic.",
+    "zh": "內迴路在感測到的開關或電感電流達到外電壓迴路設定的門檻時結束導通。提供逐週期限流，並消除 LC 雙極點。占空比大於 50% 時需要斜率補償以避免次諧波振盪。在 LLC 中，同樣的概念改以諧振電流或電荷結束每個半週期，提升暫態響應。MCU 中以類比比較器、DAC 門檻與 PWM 故障邏輯實現。",
+    "formula": "slope comp: m_a ≥ m_2 / 2",
+    "related": [
+      "cmpss",
+      "dac",
+      "trip-zone",
+      "voltage-mode-control",
+      "llc"
+    ]
+  },
+  {
+    "id": "pulse-density-modulation",
+    "term": "Pulse density modulation (PDM)",
+    "zhTerm": "脈衝密度調變",
+    "category": "control",
+    "en": "Regulating power by passing or skipping whole switching cycles instead of changing duty or frequency. At light load an LLC can keep its efficient operating point and only switch some of the cycles. The pulse pattern is spread evenly, which gives lower ripple than plain on/off bursts.",
+    "zh": "以通過或略過整個開關週期來調節功率，而不是改變占空比或頻率。輕載時 LLC 可維持在高效率工作點，只在部分週期切換。脈衝分布較平均，因此漣波比單純的開／關突發更小。",
+    "related": [
+      "burst-mode",
+      "llc",
+      "dpwm"
+    ]
+  },
+  {
+    "id": "burst-mode",
+    "term": "Burst mode",
+    "zhTerm": "突發模式",
+    "category": "control",
+    "en": "A light-load mode in which the converter switches in short bursts and then stops, typically entering and leaving through a comparator with hysteresis on the output voltage or feedback level. It cuts switching loss and standby power at the cost of higher output ripple and possible audible noise.",
+    "zh": "輕載時，轉換器以短暫突發方式切換後停止，通常由輸出電壓或回授準位的遲滯比較器決定進出。可降低開關損耗與待機功耗，但輸出漣波較大，也可能產生可聽噪音。",
+    "related": [
+      "pulse-density-modulation",
+      "cmpss",
+      "llc"
+    ]
+  },
+  {
+    "id": "lc-double-pole",
+    "term": "LC double pole",
+    "zhTerm": "LC 雙極點",
+    "category": "converter",
+    "en": "The output filter inductor and capacitor form a second-order pole pair: the gain falls at −40 dB/decade and the phase drops by up to 180° around f₀. A light load gives a high Q and a sharp resonant peak. Voltage-mode compensators place two zeros near f₀ to cancel it.",
+    "zh": "輸出濾波電感與電容形成二階極點：在 f₀ 附近增益以 −40 dB/dec 下降，相位最多下降 180°。輕載時 Q 值高、諧振峰尖銳。電壓模式補償器會在 f₀ 附近放兩個零點抵消它。",
+    "formula": "f_0 = 1 / (2π√(L·C)),  Q ≈ R_L·√(C/L)",
+    "related": [
+      "esr-zero",
+      "type-iii",
+      "voltage-mode-control"
+    ]
+  },
+  {
+    "id": "esr-zero",
+    "term": "ESR zero",
+    "zhTerm": "ESR 零點",
+    "category": "converter",
+    "en": "The output capacitor's equivalent series resistance adds a zero to the power stage. It returns 90° of phase and flattens the roll-off to −20 dB/decade. With low-ESR ceramics the zero moves far above crossover and no longer helps stability.",
+    "zh": "輸出電容的等效串聯電阻在功率級中產生一個零點，提供 90° 相位，並使衰減變為 −20 dB/dec。使用低 ESR 的陶瓷電容時，這個零點會遠高於穿越頻率，不再幫助穩定。",
+    "formula": "f_ESR = 1 / (2π·R_ESR·C)",
+    "related": [
+      "lc-double-pole",
+      "type-ii",
+      "type-iii"
+    ]
+  },
+  {
+    "id": "rhp-zero",
+    "term": "Right-half-plane (RHP) zero",
+    "zhTerm": "右半平面零點",
+    "category": "converter",
+    "en": "In boost and buck-boost converters, raising the duty first cuts the energy delivered to the output before the inductor current can grow, so the output initially moves the wrong way. The resulting zero adds gain but removes phase, and limits crossover to roughly a fifth of its frequency or below.",
+    "zh": "在 boost 與 buck-boost 中，提高占空比會先減少送到輸出的能量，電感電流來不及上升，輸出因此先往反方向變化。這個零點增加增益卻扣除相位，使穿越頻率通常須低於其頻率的約 1/5。",
+    "formula": "boost: f_RHP = R_L·(1−D)² / (2π·L);  buck-boost: f_RHP = R_L·(1−D)² / (2π·L·D)",
+    "related": [
+      "crossover",
+      "boost-pfc",
+      "four-switch-buck-boost"
+    ]
+  },
+  {
+    "id": "fcml",
+    "term": "Flying-capacitor multilevel (FCML) converter",
+    "zhTerm": "飛跨電容多階轉換器",
+    "category": "converter",
+    "en": "An N-level converter that stacks N−1 switch pairs with flying capacitors balanced at fractions of the input voltage. Each switch blocks only V_in/(N−1), so low-voltage GaN parts can be used, and phase-shifted PWM makes the inductor see N−1 times the switching frequency with smaller voltage steps. The inductor can shrink a lot, at the cost of more switches and active capacitor-voltage balancing. A 4-level FCML totem-pole PFC is used in 5.5 kW ORv3 power shelves.",
+    "zh": "N 階轉換器串接 N−1 組開關對，飛跨電容的電壓平衡在輸入電壓的分數。每個開關只承受 V_in/(N−1)，可使用低壓 GaN；相移 PWM 讓電感看到 N−1 倍的切換頻率與更小的電壓階梯，電感可大幅縮小。代價是開關數增加，且需主動平衡電容電壓。5.5 kW ORv3 電源模組採用 4 階 FCML 圖騰柱 PFC。",
+    "formula": "V_switch = V_in/(N−1),  V_Ck = k·V_in/(N−1),  f_L = (N−1)·f_sw,  PWM shift = 360°/(N−1)",
+    "related": [
+      "totem-pole-pfc",
+      "gan",
+      "multiphase-digital"
+    ]
+  },
+  {
+    "id": "llc-gain-curve",
+    "term": "LLC gain curve",
+    "zhTerm": "LLC 增益曲線",
+    "category": "converter",
+    "en": "Voltage gain of an LLC versus normalized frequency, from first-harmonic approximation. A smaller Lm/Lr ratio (Ln) gives more gain range and a narrower frequency span but more circulating current. A higher Q (heavier load) flattens the peak. The design keeps operation on the inductive (ZVS) side of the peak over the whole input and load range.",
+    "zh": "以一次諧波近似（FHA）求得的 LLC 電壓增益對正規化頻率的關係。Lm/Lr 比（Ln）越小，增益範圍越大、頻率範圍越窄，但環流越大；Q 值越高（負載越重）峰值越平。設計時需確保在整個輸入與負載範圍內都工作在增益峰值的電感性（ZVS）側。",
+    "formula": "M = 1 / √[(1 + (1 − 1/f_n²)/L_n)² + Q²·(f_n − 1/f_n)²],  f_n = f_sw/f_r,  L_n = L_m/L_r,  Q = √(L_r/C_r) / R_ac,  R_ac = 8n²R_L/π²",
+    "related": [
+      "llc",
+      "split-capacitor-llc"
+    ]
+  },
+  {
+    "id": "split-capacitor-llc",
+    "term": "Split-capacitor LLC",
+    "zhTerm": "分裂電容 LLC",
+    "category": "converter",
+    "en": "A half-bridge LLC whose resonant capacitor is split into two halves, one to each input rail. Input current flows in both half-cycles, so input-capacitor RMS current drops, and the split caps also serve as part of the bulk bypass. It is a common building block for interleaved LLC stages.",
+    "zh": "半橋 LLC 的諧振電容分成兩半，分別接到輸入正負端。兩個半週期都有輸入電流，因此輸入電容的 RMS 電流降低，分裂電容也兼作部分旁路。常用來組成交錯式 LLC。",
+    "related": [
+      "llc",
+      "interleaved-llc",
+      "llc-gain-curve"
+    ]
+  },
+  {
+    "id": "interleaved-llc",
+    "term": "Interleaved and three-phase LLC",
+    "zhTerm": "交錯式與三相 LLC",
+    "category": "converter",
+    "en": "Several LLC phases share the load with phase-shifted switching so their rectified ripple cancels and the output capacitor shrinks. Resonant components with a few percent tolerance make the phases share current unevenly. Fixes include peak-current or charge control per phase, common-node or star-connected resonant capacitors, and three-phase configurations.",
+    "zh": "多個 LLC 相以相移切換分擔負載，使整流後的漣波互相抵消，縮小輸出電容。諧振元件只要有幾個百分比的誤差就會讓各相電流分配不均。解法包括每相做峰值電流或電荷控制、共節點或星形連接諧振電容，以及三相架構。",
+    "formula": "phase shift = 180°/N  (N phases, rectified ripple at 2·f_sw)",
+    "related": [
+      "llc",
+      "split-capacitor-llc",
+      "peak-current-mode",
+      "multiphase-digital"
+    ]
+  },
+  {
+    "id": "isop",
+    "term": "Input-series output-parallel (ISOP)",
+    "zhTerm": "輸入串聯輸出並聯",
+    "category": "converter",
+    "en": "Connecting several isolated converter modules with inputs in series and outputs in parallel, so each module sees only a fraction of a high input voltage (e.g. 800 V) while together supplying a high current at a low output (e.g. 12.5 V). The control must keep the input voltages balanced, because a module taking more output current pulls its own input voltage down.",
+    "zh": "多個隔離式模組的輸入串聯、輸出並聯，讓每個模組只承受高輸入電壓（例如 800 V）的一部分，合起來在低輸出電壓（例如 12.5 V）提供大電流。控制必須維持各模組輸入電壓平衡，因為輸出電流較大的模組會把自己的輸入電壓拉低。",
+    "formula": "V_in,k = V_in / N  (balanced),  I_out = Σ I_out,k",
+    "related": [
+      "llc",
+      "interleaved-llc"
+    ]
+  },
+  {
+    "id": "gan",
+    "term": "GaN HEMT",
+    "zhTerm": "氮化鎵電晶體",
+    "category": "converter",
+    "en": "Gallium-nitride high-electron-mobility transistor. It has very low gate and output charge and no body-diode reverse recovery, which makes the totem-pole PFC and MHz-class switching practical. Drawbacks are a low gate-voltage limit, fast edges that stress layout and EMI, and the need for very short dead time.",
+    "zh": "氮化鎵高電子遷移率電晶體。閘極與輸出電荷很低，且沒有本體二極體的反向恢復，使圖騰柱 PFC 與 MHz 等級切換變得可行。缺點是閘極耐壓低、邊緣極快對佈局與 EMI 要求高，且死區時間必須很短。",
+    "related": [
+      "totem-pole-pfc",
+      "fcml",
+      "dead-band"
+    ]
+  },
+  {
+    "id": "orv3",
+    "term": "OCP Open Rack V3 (ORv3)",
+    "zhTerm": "OCP 開放機架第三版",
+    "category": "power-system",
+    "en": "Open Compute Project rack standard for data centers. Power shelves convert AC to a 48 V-class (about 50 V) DC busbar that feeds every server in the rack, with battery backup units on the same bus. Newer AI racks raise shelf power (e.g. 5.5 kW per supply module) and move toward high-voltage DC distribution.",
+    "zh": "開放運算計畫（OCP）的資料中心機架標準。電源架（power shelf）把交流電轉為約 50 V 的 48 V 級直流匯流排，供電給整個機架的伺服器，電池備援單元也掛在同一匯流排上。新一代 AI 機架提高電源架功率（例如每個電源模組 5.5 kW），並朝高壓直流配電發展。",
+    "related": [
+      "crps",
+      "bbu",
+      "direct-48v",
+      "eighty-plus"
+    ]
+  },
+  {
+    "id": "crps",
+    "term": "CRPS (Common Redundant Power Supply)",
+    "zhTerm": "通用冗餘電源規格",
+    "category": "power-system",
+    "en": "A standard form factor for hot-swappable server and power-shelf supplies, used in N+1 or N+N redundant groups. Each unit typically has a PFC stage plus an isolated DC-DC stage, current sharing, a PMBus interface and strict efficiency and hold-up requirements.",
+    "zh": "伺服器與電源架用的可熱插拔電源標準外形，以 N+1 或 N+N 冗餘方式使用。每個模組通常包含 PFC 與隔離式 DC-DC 兩級，具備均流、PMBus 介面，以及嚴格的效率與維持時間要求。",
+    "related": [
+      "orv3",
+      "pmbus",
+      "hold-up-time",
+      "totem-pole-pfc",
+      "llc"
+    ]
+  },
+  {
+    "id": "bbu",
+    "term": "Battery backup unit (BBU)",
+    "zhTerm": "電池備援單元",
+    "category": "power-system",
+    "en": "A battery module on the rack DC bus that carries the load through an AC outage or until a generator starts. Its bidirectional converter charges the battery in normal operation and discharges it onto the bus without interruption.",
+    "zh": "掛在機架直流匯流排上的電池模組，在交流斷電或發電機啟動前持續供電。內部的雙向轉換器平時為電池充電，斷電時無縫放電到匯流排。",
+    "related": [
+      "orv3",
+      "dab",
+      "four-switch-buck-boost"
+    ]
+  },
+  {
+    "id": "eighty-plus",
+    "term": "80 PLUS efficiency levels",
+    "zhTerm": "80 PLUS 效率等級",
+    "category": "power-system",
+    "en": "A certification of power-supply efficiency at 10%, 20%, 50% and 100% load, with levels from Bronze to Titanium. Titanium, the level data-center supplies usually target, requires about 96% at half load on 230 V and also sets a minimum power factor. OCP ORv3 defines its own efficiency curve on top.",
+    "zh": "在 10%、20%、50%、100% 負載下認證電源效率的制度，等級由 Bronze 到 Titanium。資料中心電源通常以 Titanium 為目標，230 V 半載時約需 96%，並規定最低功率因數。OCP ORv3 另訂自己的效率曲線。",
+    "related": [
+      "power-factor",
+      "crps",
+      "orv3"
+    ]
+  },
+  {
+    "id": "power-factor",
+    "term": "Power factor (PF)",
+    "zhTerm": "功率因數",
+    "category": "power-system",
+    "en": "Real power divided by apparent power. It falls with both phase shift between voltage and current (displacement) and current harmonics (distortion). A PFC stage shapes the input current into a sine in phase with the voltage to push PF close to 1.",
+    "zh": "實功率除以視在功率。電壓電流間的相位差（位移因數）與電流諧波（失真因數）都會使其下降。PFC 級把輸入電流整形為與電壓同相的正弦波，使 PF 接近 1。",
+    "formula": "PF = P / (V_rms·I_rms) = cos φ / √(1 + THD²)",
+    "related": [
+      "thd",
+      "boost-pfc",
+      "totem-pole-pfc"
+    ]
+  },
+  {
+    "id": "thd",
+    "term": "Total harmonic distortion (THD)",
+    "zhTerm": "總諧波失真",
+    "category": "power-system",
+    "en": "The RMS of all harmonics divided by the fundamental. For a PFC the input-current THD is limited by standards (e.g. IEC 61000-3-2 classes) and data-center specs, and it rises at light load and near the AC zero crossing.",
+    "zh": "所有諧波的 RMS 值除以基波。PFC 的輸入電流 THD 受標準（例如 IEC 61000-3-2 各等級）與資料中心規格限制，輕載時與交流過零點附近會上升。",
+    "formula": "THD = √(Σ_{h≥2} I_h²) / I_1",
+    "related": [
+      "power-factor",
+      "boost-pfc",
+      "totem-pole-pfc"
+    ]
+  },
+  {
+    "id": "hold-up-time",
+    "term": "Hold-up time and bulk capacitor",
+    "zhTerm": "維持時間與大電容",
+    "category": "power-system",
+    "en": "How long the output stays in regulation after AC input is lost, typically 10–20 ms for server supplies. The PFC bulk capacitor supplies the energy while its voltage falls to the lowest level the DC-DC stage can still regulate from, which is why LLC designs need gain margin at low input.",
+    "zh": "交流輸入中斷後輸出仍維持穩壓的時間，伺服器電源通常為 10–20 ms。期間由 PFC 大電容供應能量，電壓一路下降到 DC-DC 級還能穩壓的最低值，這也是 LLC 設計需要在低輸入時保留增益餘量的原因。",
+    "formula": "C_bulk ≥ 2·P_out·t_hold / (η·(V_1² − V_2²))",
+    "related": [
+      "crps",
+      "llc-gain-curve",
+      "boost-pfc"
     ]
   }
 ]

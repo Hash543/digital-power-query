@@ -1,6 +1,6 @@
 import data from "@/data/terms.json";
 
-export type Category = "pmbus" | "number" | "pwm" | "adc" | "control" | "converter" | "architecture" | "mcu";
+export type Category = "pmbus" | "number" | "pwm" | "adc" | "control" | "converter" | "architecture" | "mcu" | "power-system";
 
 export type ArchGroup = "topology" | "system" | "control";
 
@@ -37,6 +37,7 @@ export const categories: Record<Category, { en: string; zh: string }> = {
   converter: { en: "Converter basics", zh: "轉換器基礎" },
   architecture: { en: "Architecture", zh: "電源架構" },
   mcu: { en: "MCU & peripherals", zh: "MCU 與週邊" },
+  "power-system": { en: "Power systems & standards", zh: "電源系統與規範" },
 };
 
 export const architectures = (group: ArchGroup) =>
