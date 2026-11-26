@@ -1361,5 +1361,337 @@
         "url": "https://it.mathworks.com/help/sps/ug/power-converters-dab-1ph.html"
       }
     ]
+  },
+  {
+    "id": "gpio",
+    "term": "GPIO (General-Purpose I/O)",
+    "zhTerm": "通用輸入輸出腳位",
+    "category": "mcu",
+    "en": "A pin the firmware can configure as a digital input or output. Typical options are direction, internal pull-up/pull-down, push-pull or open-drain output, drive strength and input qualification (sampling filter). Most GPIOs are multiplexed with peripheral functions such as PWM, UART or ADC.",
+    "zh": "可由韌體設定為數位輸入或輸出的腳位。常見設定有方向、內部上拉／下拉、推挽或開汲極輸出、驅動能力，以及輸入取樣濾波（input qualification）。多數 GPIO 會與 PWM、UART、ADC 等週邊功能共用腳位（pin mux）。",
+    "related": [
+      "pull-up",
+      "open-drain",
+      "logic-levels",
+      "interrupt"
+    ]
+  },
+  {
+    "id": "pull-up",
+    "term": "Pull-up / Pull-down resistor",
+    "zhTerm": "上拉／下拉電阻",
+    "category": "mcu",
+    "en": "A resistor that holds a line at a defined level when nothing drives it: a pull-up ties it to VCC, a pull-down to GND. Open-drain/open-collector signals need a pull-up to read high. Smaller values give faster edges and better noise immunity but draw more current when the line is low (I = VCC/R).",
+    "zh": "在沒有任何元件驅動時，把訊號線固定在確定電位的電阻：上拉接 VCC，下拉接 GND。開汲極／開集極訊號需要上拉才能讀到高電位。阻值越小，邊緣越快、抗雜訊越好，但線被拉低時耗電越大（I = VCC/R）。",
+    "formula": "I_low = VCC / R_pull,  τ_rise ≈ R_pull · C_line",
+    "related": [
+      "open-drain",
+      "gpio",
+      "logic-levels"
+    ]
+  },
+  {
+    "id": "open-drain",
+    "term": "Open-drain / Open-collector",
+    "zhTerm": "開汲極／開集極輸出",
+    "category": "mcu",
+    "en": "An output that can only pull the line low; high comes from an external pull-up. Several devices can share one line (wired-AND), and the pull-up can go to a different voltage than the driver's supply, which makes it useful for level shifting. I²C, SMBus and many sensors, coin acceptors and alert lines use it. When one pull-up is shared, a low on one input can back-feed into another; series diodes or optocouplers isolate the lines.",
+    "zh": "只能把線拉低的輸出，高電位由外部上拉電阻提供。多個裝置可共用同一條線（wired-AND），上拉也可接到與驅動端不同的電壓，因此可做電位轉換。I²C、SMBus、許多感測器、投幣器與警示腳位都使用此方式。若多條線共用上拉或接點，一條線拉低可能倒灌到另一條，可用串聯二極體或光耦隔離。",
+    "related": [
+      "pull-up",
+      "i2c",
+      "smbus",
+      "optocoupler"
+    ]
+  },
+  {
+    "id": "logic-levels",
+    "term": "Logic levels (V_IL / V_IH / V_OL / V_OH)",
+    "zhTerm": "邏輯電位門檻",
+    "category": "mcu",
+    "en": "Input thresholds: a voltage below V_IL reads as 0, above V_IH reads as 1, and the band in between is undefined. Output levels V_OL/V_OH are guaranteed at a stated load current. Noise margin is V_IL − V_OL (low) and V_OH − V_IH (high). A series diode adds its forward drop (≈0.3 V Schottky, ≈0.7 V silicon) to the low level, so check it still falls below V_IL. '5 V tolerant' pins accept 5 V while the MCU runs at 3.3 V.",
+    "zh": "輸入門檻：低於 V_IL 讀為 0，高於 V_IH 讀為 1，中間區域不保證。輸出電位 V_OL/V_OH 在指定負載電流下保證。雜訊邊限為 V_IL − V_OL（低）與 V_OH − V_IH（高）。串聯二極體會讓低電位多出順向壓降（蕭特基約 0.3 V、矽約 0.7 V），需確認仍低於 V_IL。標示「5 V tolerant」的腳位可在 3.3 V MCU 上承受 5 V 輸入。",
+    "formula": "NM_L = V_IL − V_OL,  NM_H = V_OH − V_IH",
+    "related": [
+      "schmitt-trigger",
+      "gpio",
+      "pull-up"
+    ]
+  },
+  {
+    "id": "schmitt-trigger",
+    "term": "Schmitt-trigger input",
+    "zhTerm": "施密特觸發輸入",
+    "category": "mcu",
+    "en": "An input with hysteresis: it switches high at a higher threshold (V_T+) than it switches low (V_T−). Slow or noisy edges therefore produce one clean transition instead of a burst. Many MCU GPIOs have it built in; it complements, but does not replace, debouncing for mechanical contacts.",
+    "zh": "具遲滯的輸入：由低轉高的門檻（V_T+）高於由高轉低的門檻（V_T−）。緩慢或帶雜訊的邊緣因此只產生一次乾淨的轉態，而不是一連串抖動。許多 MCU 的 GPIO 內建此功能；它能輔助但無法取代機械接點的去彈跳。",
+    "formula": "V_hys = V_T+ − V_T−",
+    "related": [
+      "debounce",
+      "logic-levels"
+    ]
+  },
+  {
+    "id": "debounce",
+    "term": "Debounce",
+    "zhTerm": "去彈跳",
+    "category": "mcu",
+    "en": "Filtering the rapid on/off chatter of a mechanical contact or noisy signal so one event is counted once. Hardware options are an RC filter plus Schmitt trigger; firmware options sample the pin periodically and accept a new state only after it is stable for N samples (often 5–20 ms total), or ignore edges for a lockout time after each event.",
+    "zh": "濾除機械接點或雜訊訊號在切換時的快速抖動，讓一次事件只被計數一次。硬體做法為 RC 濾波加施密特觸發；韌體做法為週期性取樣，連續 N 次狀態相同才接受（總時間常取 5–20 ms），或在每次事件後設定一段忽略邊緣的鎖定時間。",
+    "formula": "t_stable = N · T_sample",
+    "related": [
+      "schmitt-trigger",
+      "interrupt",
+      "gpio"
+    ]
+  },
+  {
+    "id": "interrupt",
+    "term": "Interrupt (ISR)",
+    "zhTerm": "中斷與中斷服務程式",
+    "category": "mcu",
+    "en": "A hardware event (pin edge, timer, ADC end-of-conversion, communication) that suspends the main program and runs an interrupt service routine. Triggers can be edge (rising/falling) or level. Interrupt latency and priority matter in digital power: the control-loop ISR is usually triggered by the ADC at a fixed rate and must finish well within one switching period.",
+    "zh": "由硬體事件（腳位邊緣、計時器、ADC 轉換完成、通訊）暫停主程式並執行中斷服務程式（ISR）。觸發方式分為邊緣觸發（上升／下降）與準位觸發。在數位電源中，中斷延遲與優先權很重要：控制迴路 ISR 通常由 ADC 以固定頻率觸發，必須在一個開關週期內充裕地完成。",
+    "related": [
+      "adc-soc",
+      "sampling-delay",
+      "debounce"
+    ]
+  },
+  {
+    "id": "optocoupler",
+    "term": "Optocoupler",
+    "zhTerm": "光耦合器（光耦）",
+    "category": "mcu",
+    "en": "An LED and phototransistor in one package that passes a signal across an isolation barrier. It separates grounds and voltage domains (e.g. a 12 V machine signal into a 3.3 V MCU) and blocks back-feeding between lines. Current transfer ratio (CTR) sets the needed LED current; common parts like PC817 are slow (tens of µs), so use digital isolators for fast signals.",
+    "zh": "將 LED 與光電晶體封裝在一起，跨越隔離屏障傳遞訊號。可分隔地線與電壓域（例如把 12 V 機台訊號接到 3.3 V MCU），並阻止訊號線之間互相倒灌。電流傳輸比（CTR）決定所需的 LED 電流；PC817 等常見元件速度較慢（數十 µs），高速訊號應改用數位隔離器。",
+    "formula": "I_C = CTR · I_F",
+    "related": [
+      "open-drain",
+      "logic-levels"
+    ]
+  },
+  {
+    "id": "input-capture",
+    "term": "Input capture",
+    "zhTerm": "輸入捕捉",
+    "category": "mcu",
+    "en": "A timer mode that latches the counter value when an input edge arrives. Differences between captures give period, frequency or pulse width without CPU polling, e.g. measuring fan tach, coin pulses, or the frequency of an LLC stage.",
+    "zh": "計時器的一種模式：輸入邊緣到達時鎖存當下的計數值。兩次捕捉的差值即可得到週期、頻率或脈寬，不需 CPU 輪詢，例如量測風扇轉速、投幣脈衝或 LLC 的工作頻率。",
+    "formula": "T = (N₂ − N₁) / f_timer",
+    "related": [
+      "epwm",
+      "interrupt"
+    ]
+  },
+  {
+    "id": "epwm",
+    "term": "ePWM (Enhanced PWM module)",
+    "zhTerm": "增強型 PWM 模組",
+    "category": "mcu",
+    "en": "The PWM peripheral of power-oriented MCUs such as TI C2000. Each module has a time base (up, down or up-down count), compare registers, action qualifiers, a dead-band generator, trip-zone inputs, phase sync between modules, and event triggers that start ADC conversions.",
+    "zh": "電源導向 MCU（如 TI C2000）的 PWM 週邊。每個模組包含時基（上數、下數或上下數）、比較暫存器、動作限定器（action qualifier）、死區產生器、Trip Zone 輸入、模組間相位同步，以及觸發 ADC 轉換的事件輸出。",
+    "related": [
+      "dpwm",
+      "dead-band",
+      "trip-zone",
+      "adc-soc",
+      "hrpwm"
+    ],
+    "calc": "/calc/topology"
+  },
+  {
+    "id": "dead-band",
+    "term": "Dead band (dead time)",
+    "zhTerm": "死區時間",
+    "category": "mcu",
+    "en": "A short delay inserted between turning one switch of a half-bridge off and the complementary switch on, so both never conduct at once (shoot-through). It is set in clock counts; too little risks shoot-through, too much increases body-diode conduction loss and distorts the effective duty.",
+    "zh": "在半橋的一個開關關斷與互補開關導通之間插入的短暫延遲，避免上下管同時導通（直通，shoot-through）。以時脈計數設定；太短有直通風險，太長則增加本體二極體導通損耗並使有效占空比失真。",
+    "formula": "N_DB = t_dead · f_clk",
+    "related": [
+      "epwm",
+      "dpwm"
+    ]
+  },
+  {
+    "id": "trip-zone",
+    "term": "Trip zone",
+    "zhTerm": "Trip Zone 硬體保護",
+    "category": "mcu",
+    "en": "A hardware path that forces PWM outputs to a safe state (low, high or high-Z) within tens of nanoseconds when a fault input or comparator event fires, without waiting for software. One-shot trips latch until firmware clears them; cycle-by-cycle trips release at the next period and act as peak-current limiting.",
+    "zh": "當故障輸入或比較器事件發生時，不經軟體、在數十奈秒內把 PWM 輸出強制到安全狀態（低、高或高阻抗）的硬體路徑。One-shot 模式會鎖住直到韌體清除；cycle-by-cycle 模式在下一週期自動釋放，可做逐週期峰值電流限制。",
+    "related": [
+      "cmpss",
+      "epwm"
+    ]
+  },
+  {
+    "id": "cmpss",
+    "term": "Analog comparator (CMPSS)",
+    "zhTerm": "類比比較器保護",
+    "category": "mcu",
+    "en": "On-chip comparators with a DAC reference (TI calls the block CMPSS) that compare a current or voltage sense signal against a threshold and feed the result straight to the PWM trip logic. Used for over-current and over-voltage protection and for peak-current-mode control, often with a ramp generator for slope compensation.",
+    "zh": "內建 DAC 參考電壓的晶片內比較器（TI 稱為 CMPSS），把電流或電壓感測訊號與門檻比較，結果直接送到 PWM 的 Trip 邏輯。用於過電流、過電壓保護，以及峰值電流模式控制，常搭配斜坡產生器做斜率補償。",
+    "related": [
+      "trip-zone",
+      "epwm"
+    ]
+  },
+  {
+    "id": "adc-soc",
+    "term": "ADC SOC trigger",
+    "zhTerm": "ADC 轉換觸發",
+    "category": "mcu",
+    "en": "Start-of-conversion signal that launches an ADC sample, usually from a PWM event (counter = zero, period or a compare value) so the sample lands at a quiet point, e.g. the middle of the on-time to read average inductor current. The end-of-conversion interrupt then runs the control loop.",
+    "zh": "啟動 ADC 取樣的轉換開始訊號，通常來自 PWM 事件（計數 = 0、= 週期或某個比較值），讓取樣落在雜訊較小的時間點，例如在導通期間中點取樣以讀到電感平均電流。轉換完成中斷接著執行控制迴路。",
+    "related": [
+      "epwm",
+      "interrupt",
+      "sampling-delay",
+      "adc-resolution"
+    ]
+  },
+  {
+    "id": "cla",
+    "term": "CLA (Control Law Accelerator)",
+    "zhTerm": "控制律加速器",
+    "category": "mcu",
+    "en": "A TI C2000 co-processor with its own floating-point unit that runs control-loop tasks in parallel with the main CPU. It can read ADC results and write PWM registers directly, cutting loop latency and freeing the CPU for communication and housekeeping.",
+    "zh": "TI C2000 內建、具浮點運算單元的協處理器，可與主 CPU 平行執行控制迴路任務。它能直接讀取 ADC 結果並寫入 PWM 暫存器，降低迴路延遲，讓主 CPU 專心處理通訊與管理工作。",
+    "related": [
+      "dsc-based",
+      "2p2z",
+      "interrupt"
+    ]
+  },
+  {
+    "id": "pll",
+    "term": "Clock and PLL",
+    "zhTerm": "時脈與鎖相迴路",
+    "category": "mcu",
+    "en": "A phase-locked loop multiplies a crystal or internal oscillator up to the system clock. The PWM clock sets PWM resolution (N = f_clk/f_sw), so clock accuracy and jitter matter. Internal RC oscillators drift a few percent; use a crystal when UART baud rate or switching frequency must be precise.",
+    "zh": "鎖相迴路把石英或內部振盪器倍頻成系統時脈。PWM 時脈決定 PWM 解析度（N = f_clk/f_sw），因此時脈精度與抖動都會影響控制。內部 RC 振盪器會漂移數個百分比；UART 鮑率或開關頻率需要精準時應使用石英振盪器。",
+    "formula": "f_sys = f_ref · M / (N · P)",
+    "related": [
+      "pwm-resolution",
+      "uart"
+    ],
+    "calc": "/calc/resolution"
+  },
+  {
+    "id": "flash-wait-states",
+    "term": "Flash wait states",
+    "zhTerm": "Flash 等待週期",
+    "category": "mcu",
+    "en": "Extra clock cycles inserted on each flash read because flash is slower than the CPU at high clock rates. They slow code executed from flash, so time-critical control ISRs are often copied to RAM at boot and run from there.",
+    "zh": "因為高時脈下 Flash 讀取速度跟不上 CPU，每次讀取需插入的額外時脈週期。它會拖慢在 Flash 上執行的程式，因此時間關鍵的控制 ISR 常在開機時複製到 RAM 執行。",
+    "formula": "WS ≥ ceil(t_access · f_sys) − 1",
+    "related": [
+      "interrupt",
+      "pll"
+    ]
+  },
+  {
+    "id": "dma",
+    "term": "DMA (Direct Memory Access)",
+    "zhTerm": "直接記憶體存取",
+    "category": "mcu",
+    "en": "A controller that moves data between peripherals and memory without the CPU, e.g. streaming ADC results into a buffer or feeding UART/SPI transmit data. It reduces CPU load and interrupt count.",
+    "zh": "不經 CPU、在週邊與記憶體之間搬移資料的控制器，例如把 ADC 結果連續寫入緩衝區，或供應 UART/SPI 的傳送資料。可降低 CPU 負載與中斷次數。",
+    "related": [
+      "adc-soc",
+      "spi",
+      "uart"
+    ]
+  },
+  {
+    "id": "watchdog",
+    "term": "Watchdog timer",
+    "zhTerm": "看門狗計時器",
+    "category": "mcu",
+    "en": "A timer that resets the MCU if firmware fails to service ('kick') it before it expires, recovering from hangs. Windowed watchdogs also reset on a kick that comes too early. In power supplies, make sure PWM outputs fall to a safe state during the reset.",
+    "zh": "若韌體未在逾時前重設（餵狗），就會重置 MCU 的計時器，用來從當機狀態恢復。視窗型看門狗在太早餵狗時也會重置。在電源應用中，需確保重置期間 PWM 輸出處於安全狀態。",
+    "related": [
+      "brown-out",
+      "trip-zone"
+    ]
+  },
+  {
+    "id": "brown-out",
+    "term": "Brown-out reset (BOR)",
+    "zhTerm": "欠壓重置",
+    "category": "mcu",
+    "en": "A supervisor that holds the MCU in reset while its supply is below a threshold, so it never runs with corrupt logic or flash writes during power-up, power-down or sags. Thresholds usually have hysteresis.",
+    "zh": "當供電低於門檻時把 MCU 保持在重置狀態的監控電路，避免在上電、斷電或電壓下陷時以錯誤的邏輯運作或寫壞 Flash。門檻通常帶有遲滯。",
+    "related": [
+      "watchdog",
+      "soft-start"
+    ]
+  },
+  {
+    "id": "bootloader",
+    "term": "Bootloader",
+    "zhTerm": "開機載入程式",
+    "category": "mcu",
+    "en": "Code that runs at reset and can update the application firmware over UART, CAN, I²C/PMBus or USB. Power products often keep a protected bootloader plus a CRC-checked application image so a failed update can be recovered in the field.",
+    "zh": "重置後最先執行的程式，可透過 UART、CAN、I²C/PMBus 或 USB 更新應用程式韌體。電源產品常保留受保護的 bootloader 並以 CRC 檢查應用程式映像，讓更新失敗時仍可在現場恢復。",
+    "related": [
+      "uart",
+      "can",
+      "pmbus"
+    ]
+  },
+  {
+    "id": "i2c",
+    "term": "I²C",
+    "zhTerm": "I²C 匯流排",
+    "category": "mcu",
+    "en": "Two-wire open-drain bus (SCL clock, SDA data) with 7-bit addressing at 100 kHz, 400 kHz or 1 MHz. Pull-up value is a trade-off between rise time on the bus capacitance and sink current. SMBus and PMBus are built on it.",
+    "zh": "雙線開汲極匯流排（SCL 時脈、SDA 資料），使用 7 位元位址，速度為 100 kHz、400 kHz 或 1 MHz。上拉電阻須在匯流排電容的上升時間與灌入電流之間取捨。SMBus 與 PMBus 建構在其上。",
+    "formula": "R_p(max) = t_r / (0.8473 · C_b)",
+    "related": [
+      "smbus",
+      "pmbus",
+      "open-drain",
+      "pull-up"
+    ]
+  },
+  {
+    "id": "spi",
+    "term": "SPI",
+    "zhTerm": "序列週邊介面",
+    "category": "mcu",
+    "en": "Synchronous full-duplex bus with clock (SCLK), MOSI, MISO and a chip select per device. Push-pull lines allow tens of MHz. Clock polarity and phase (CPOL/CPHA, modes 0–3) must match the device. Common for external ADCs, isolators and gate-driver configuration.",
+    "zh": "同步全雙工匯流排，包含時脈（SCLK）、MOSI、MISO 及每個裝置一條晶片選擇線。推挽輸出可達數十 MHz。時脈極性與相位（CPOL/CPHA，模式 0–3）必須與裝置一致。常用於外部 ADC、隔離器與閘極驅動器設定。",
+    "related": [
+      "dma",
+      "i2c"
+    ]
+  },
+  {
+    "id": "uart",
+    "term": "UART (SCI)",
+    "zhTerm": "非同步序列埠",
+    "category": "mcu",
+    "en": "Asynchronous serial link (TX/RX) framed by start and stop bits at an agreed baud rate; TI calls it SCI. Both ends' clocks must agree within roughly ±2%. With an RS-485 transceiver it covers long cables and multi-drop networks.",
+    "zh": "以起始位元與停止位元框住資料、雙方約定鮑率的非同步序列連線（TX/RX），TI 稱為 SCI。兩端時脈誤差需在約 ±2% 內。搭配 RS-485 收發器可支援長距離與多點網路。",
+    "formula": "baud = f_clk / (16 · BRR)  (typical ×16 oversampling)",
+    "related": [
+      "pll",
+      "bootloader",
+      "can"
+    ]
+  },
+  {
+    "id": "can",
+    "term": "CAN / CAN FD",
+    "zhTerm": "控制器區域網路",
+    "category": "mcu",
+    "en": "Differential multi-master bus with message-ID arbitration and built-in CRC and error confinement. Classic CAN runs up to 1 Mbit/s with 8-byte payloads; CAN FD raises the data-phase rate and allows 64-byte payloads. Common in automotive chargers, DC/DC converters and battery systems.",
+    "zh": "差動式多主控匯流排，以訊息 ID 仲裁，內建 CRC 與錯誤隔離機制。傳統 CAN 最高 1 Mbit/s、每筆 8 位元組；CAN FD 提高資料段速率並支援 64 位元組。常見於車用充電器、DC/DC 轉換器與電池系統。",
+    "related": [
+      "uart",
+      "bootloader"
+    ]
   }
 ]

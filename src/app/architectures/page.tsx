@@ -44,9 +44,9 @@ const diagrams: Record<string, Stage[]> = {
   ],
   "four-switch-buck-boost": [
     [{ label: "V_in", sub: "above or below V_out", tone: "source" }],
-    [{ label: "Buck leg", sub: "Q1 / Q2" }],
-    [{ label: "Inductor" }],
-    [{ label: "Boost leg", sub: "Q3 / Q4" }, { label: "Mode select", sub: "buck / BB / boost", tone: "digital" }],
+    [{ label: "Buck leg", sub: "A high / B low → SW1" }],
+    [{ label: "Inductor", sub: "SW1 ↔ SW2" }],
+    [{ label: "Boost leg", sub: "SW2 → C low / D high" }, { label: "Mode select", sub: "buck / BB / boost", tone: "digital" }],
     [{ label: "V_out", tone: "load" }],
   ],
   psfb: [

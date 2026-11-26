@@ -261,8 +261,8 @@ function Fsbb({ fclk }: { fclk: number }) {
         }}
         note={
           <T
-            en="Inside the band all four switches run (A+C, then B+D). Outside it, one leg stays static and the other runs as a plain buck or boost. Add hysteresis between modes in firmware so the converter does not chatter at the edge."
-            zh="在區間內四顆開關都切換（A+C，再 B+D）；區間外則一臂保持靜態，另一臂當一般降壓或升壓運作。韌體應在模式之間加入遲滯，避免在邊界來回跳動。"
+            en="Inside the band all four switches run (A+C, then B+D), and the average inductor current rises to I_in + I_out. Outside it, one leg stays static and the other runs as a plain buck or boost. The duty jumps at each band edge (e.g. A goes from ≈91% to ≈48%), so firmware needs hysteresis and a smooth hand-over. A static high-side switch (D in buck, A in boost) needs a bootstrap refresh or charge pump to stay on at 100%."
+            zh="在區間內四顆開關都切換（A+C，再 B+D），電感平均電流升高為 I_in + I_out。區間外則一臂保持靜態，另一臂當一般降壓或升壓運作。占空比在區間邊界會跳變（例如 A 從約 91% 變成約 48%），因此韌體需要遲滯與平滑銜接。保持常開的高側開關（降壓時的 D、升壓時的 A）需要自舉電容補充或電荷泵，才能維持 100% 導通。"
           />
         }
       />
